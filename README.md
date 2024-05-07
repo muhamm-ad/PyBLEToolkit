@@ -44,14 +44,13 @@ class MyBLEService(BLEService):
         print(data)
 ```
 
-[//]: # (## Contributing)
+## Contributing
 
-[//]: # ()
-[//]: # (We welcome contributions to the PyBLEToolkit! If you have suggestions for improvements or new features, please feel free to fork the repository and submit a pull request. Check out our `CONTRIBUTING.md` for guidelines on how to contribute.)
+We welcome contributions to the PyBLEToolkit! If you have suggestions for improvements or new features, please feel free to fork the repository and submit a pull request. Check out our `CONTRIBUTING.md` for guidelines on how to contribute.
 
-[//]: # (## License)
+## License
 
-[//]: # (This project is licensed under the MIT License - see the [LICENSE]&#40;LICENSE&#41; file for details.)
+This project is licensed under the MIT License - see the [LICENSE](docs/LICENSE) file for details.
 
 ## Authors
 
