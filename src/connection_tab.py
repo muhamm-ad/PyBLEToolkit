@@ -1,7 +1,8 @@
-from adafruit_ble.advertising.standard import Advertisement, Service
-from src import TRANSPARENT_COLOR
+from adafruit_ble.advertising.standard import Advertisement
+from src import TRANSPARENT_COLOR, PyBLEToolkit_SERVICES
+from src.services.service import AbstractService
 from .selectable_button_list import SelectableButtonList
-from adafruit_ble import BLERadio
+from adafruit_ble import BLERadio, BLEConnection
 from collections import defaultdict
 from functools import partial
 import customtkinter as ctk
@@ -15,8 +16,10 @@ DEVICE_TIMEOUT = 10
 
 
 class ConnectionTab(ctk.CTkFrame):
-    def __init__(self, master, command=None, **kwargs):
+    def __init__(self, master, device_cmd=None, service_cmd=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.device_cmd = device_cmd
+        self.service_cmd = service_cmd
         self._configure_grid_layout()
 
         self._scan_button = None
@@ -141,9 +144,11 @@ class ConnectionTab(ctk.CTkFrame):
         self._stop_scanning_devices()
 
     def _select_device(self, advert: Advertisement):
+        self.device_cmd(advert)
         if not BLE.connected and advert.connectable:
             print(f"Connecting to {advert.address}...")
 
+            self._stop_scanning_devices()
             connection = BLE.connect(advert)
             if connection and connection.connected:
                 print("Connected")
@@ -153,15 +158,18 @@ class ConnectionTab(ctk.CTkFrame):
         else:
             print(f"{advert.address} not connectable.")
 
-    def _update_services(self, advert, connection):
+    def _update_services(self, advert, connection: BLEConnection):
         self._services_frame.configure(
-            label_text=f"{advert.complete_name}" if advert.complete_name else f"{advert.address}")
+            label_text=f"{advert.complete_name}" if advert.complete_name else f"{advert.address.string}")
 
-        for srv in connection:
-            print("Service found: " + str(srv))
-            self._services_frame.add_item(display_text=srv.__name__,
-                                          command=partial(self._service_disp_manager, srv))
+        for srv in PyBLEToolkit_SERVICES: #FIXME
+            if srv in connection:
+                print("Service found: " + str(srv))
+                self._services_frame.add_item(display_text=srv.__name__,
+                                              command=partial(self._select_service, srv))
 
-    def _service_disp_manager(self, service):
-        # TODO
-        pass
+    def _select_service(self, service):
+        if not isinstance(service, AbstractService):
+            print("Error: Provided service is not an instance of AbstractService")
+        else:
+            self.service_cmd(service)

@@ -2,6 +2,8 @@ from src import TAB_X_PADDING, TAB_Y_PADDING
 from src.connection_tab import ConnectionTab
 import customtkinter as ctk
 
+from src.service_tabs_manager import ServiceTabsManager
+
 BASE_WINDOW_WIDTH = 2560
 BASE_WINDOW_HEIGHT = 1440
 APPEARANCE_MODE = "Dark"
@@ -16,9 +18,10 @@ class BLEToolkitApp(ctk.CTk):
         self.data_tab = None
         self.connection_tab = None
         self.initialize_tabs()
+        self.data_tab_manager = ServiceTabsManager(master=self.data_tab)
 
     def make_connection_tab(self):
-        connection_tab = ConnectionTab(master=self)
+        connection_tab = ConnectionTab(master=self, device_cmd=self.select_device, service_cmd=self.select_service)
         connection_tab.grid_columnconfigure(0, weight=1)
         connection_tab.grid_rowconfigure(0, weight=1)
         return connection_tab
@@ -48,6 +51,12 @@ class BLEToolkitApp(ctk.CTk):
     def closing_handler(self):
         self.connection_tab.quit()
         self.quit()
+
+    def select_device(self, service):
+        pass
+
+    def select_service(self, service):
+        self.data_tab_manager.select_service(service)
 
 
 def initialize_app_settings():
