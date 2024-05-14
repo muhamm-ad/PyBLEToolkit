@@ -1,11 +1,11 @@
 # PyBLEToolkit
 
-PyBLEToolkit is a Python toolkit designed to provide a generic environment for Bluetooth Low Energy (BLE) services using tkinter. This toolkit simplifies the development of custom BLE service interfaces, enabling developers to focus on functionality and data handling while easily integrating with a GUI framework.
+PyBLEToolkit is a Python toolkit designed to provide a generic environment for Bluetooth Low Energy (BLE) services using customtkinter. This toolkit simplifies the development of custom BLE service interfaces, enabling developers to focus on functionality and data handling while easily integrating with a GUI framework.
 
 ## Features
 
 - **Easy GUI Integration**: Quickly add custom frames to display and interact with BLE services.
-- **Python and Tkinter Based**: Utilizes Python for logic and tkinter for a user-friendly interface.
+- **Python and customtkinter Based**: Uses Python for logic and customtkinter for a user-friendly interface.
 - **Extensible Framework**: Designed to be flexible, allowing developers to implement and showcase their BLE services seamlessly.
 
 ## Prerequisites
@@ -13,40 +13,31 @@ PyBLEToolkit is a Python toolkit designed to provide a generic environment for B
 Before you begin, ensure you have the following installed:
 - Python 3.6 or newer
 - pip (Python package installer)
-
-## Installation
-
-To set up PyBLEToolkit on your local machine, follow these steps:
-
-```bash
-# Clone the repository
-git clone https://github.com/muhamm-ad/PyBLEToolkit.git
-
-# Navigate to the project directory
-cd PyBLEToolkit
-
-# Install necessary Python packages
-pip install -r requirements.txt
-```
+- Check `requirements.txt` for necessary python packages
 
 ## Usage
 
-After installation, you can start by creating a new BLE service frame. Here is a simple example of how to integrate a new service into the toolkit:
+After installation, you can start by creating a new BLE service frame. Here are the steps to integrate a new service into the toolkit:
+
+1. Create two objects: one for the service itself that inherits from `AbstractService` in [service.py](src/service.py), and another for the GUI of your service that inherits from `ServiceTab` in [service_tab.py](src/service_tab.py). See [examples](src/examples) for reference.
+
+2. Register your service and GUI in the dictionary [SERVICE_REGISTER](src/__init__.py) like this:
 
 ```python
-# Example Python script to demonstrate usage
-from PyBLEToolkit import BLEService
-
-# Implement your BLE service logic
-class MyBLEService(BLEService):
-    def display_data(self, data):
-        # Logic to display data in GUI
-        print(data)
+# Service register mapping services to their corresponding tab classes
+SERVICE_REGISTER: Dict[Type[AbstractService], Type[ServiceTab]] = {
+    MyServiceObject: MyServiceObjectTab,
+    # ...
+}
 ```
+
+Once registered, you can run the application and connect to your service.
 
 ## Contributing
 
-We welcome contributions to the PyBLEToolkit! If you have suggestions for improvements or new features, please feel free to fork the repository and submit a pull request. Check out our `CONTRIBUTING.md` for guidelines on how to contribute.
+We welcome contributions to PyBLEToolkit! To make this project more interesting and useful, we encourage developers to contribute their services with pre-prepared GUIs for various applications. Please document the protocol for data transmission.
+
+If you have suggestions for improvements or new features, feel free to submit a pull request. Check out our `CONTRIBUTING.md` for guidelines on how to contribute.
 
 ## License
 
@@ -57,5 +48,5 @@ This project is licensed under the MIT License - see the [LICENSE](docs/LICENSE)
 - [muhamm-ad · GitHub](https://github.com/muhamm-ad)
 
 ## Acknowledgments
-- Inspiration from the BLE community and various open-source projects that have paved the way for this toolkit.
 
+- Inspiration from the BLE community and various open-source projects that have paved the way for this toolkit, especially [Adafruit](https://github.com/adafruit)

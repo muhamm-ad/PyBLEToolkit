@@ -4,8 +4,20 @@ We love your input! We want to make contributing to this project as easy and tra
 - Reporting a bug
 - Discussing the current state of the code
 - Submitting a fix
-- Proposing new features
 - Becoming a maintainer
+- Proposing new features
+- Proposing new GUI service
+  - **Develop Your Service**: Create a new service class that inherits from `AbstractService` and a corresponding GUI class that inherits from `ServiceTab`.
+  - **Document the Protocol**: Clearly document the data transmission protocol used by your service. Include examples of the data format and how it should be interpreted.
+  - **Submit a Pull Request**: Fork the repository, add your service and GUI classes, update the `SERVICE_REGISTER` dictionary, and submit a pull request with your changes.
+
+### How to Contribute Your Service
+
+1. **Develop Your Service**: Create a new service class that inherits from `AbstractService` and a corresponding GUI class that inherits from `ServiceTab`.
+2. **Document the Protocol**: Clearly document the data transmission protocol used by your service. Include examples of the data format and how it should be interpreted.
+3. **Submit a Pull Request**: Fork the repository, add your service and GUI classes, update the `SERVICE_REGISTER` dictionary, and submit a pull request with your changes.
+
+
 
 ## We Develop with Github
 We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
