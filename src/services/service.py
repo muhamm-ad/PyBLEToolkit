@@ -25,7 +25,3 @@ class AbstractService(Service, abc.ABC):
     @abc.abstractmethod
     def write(self):
         pass
-
-    @abc.abstractmethod
-    def get_service_tab(self, master) -> ServiceTab:
-        pass

@@ -1,5 +1,5 @@
 from src.services.service import AbstractService, ServiceTab
-from adafruit_ble.services.nordic import UARTService
+from adafruit_ble.services.nordic import UARTService as NordicUARTService
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -49,16 +49,7 @@ class UARTServiceTab(ServiceTab):
         self._canvas.draw()
 
 
-class UartService(UARTService, AbstractService):
+class UARTService(NordicUARTService, AbstractService):
     def __init__(self, service=None):
         UARTService.__init__(self, service=service)
         AbstractService.__init__(self, service=service)
-
-    def read(self):
-        return UARTService.read(self)
-
-    def write(self):
-        return UARTService.write(self)
-
-    def get_service_tab(self, master) -> ServiceTab:
-        return UARTServiceTab(master=master)

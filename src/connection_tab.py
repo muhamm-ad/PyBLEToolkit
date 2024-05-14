@@ -1,5 +1,5 @@
 from adafruit_ble.advertising.standard import Advertisement
-from src import TRANSPARENT_COLOR, PyBLEToolkit_SERVICES
+from src import TRANSPARENT_COLOR, SERVICE_REGISTER, STD_PADDING
 from src.services.service import AbstractService
 from .selectable_button_list import SelectableButtonList
 from adafruit_ble import BLERadio, BLEConnection
@@ -9,7 +9,6 @@ import customtkinter as ctk
 import threading
 import time
 
-PADDING = 5
 BLE = BLERadio()
 SLEEP_TIME = 2
 DEVICE_TIMEOUT = 10
@@ -54,14 +53,14 @@ class ConnectionTab(ctk.CTkFrame):
         self._services_frame = SelectableButtonList(master=self, label_text="Services")
 
     def _create_widgets(self):
-        self._create_scanning_buttons().pack(pady=PADDING, padx=PADDING)
+        self._create_scanning_buttons().pack(pady=STD_PADDING, padx=STD_PADDING)
 
         self._create_selectable_button_lists()
-        self._devices_frame.pack(padx=PADDING, pady=PADDING, fill=ctk.BOTH, expand=True)
-        self._services_frame.pack(padx=PADDING, pady=PADDING, fill=ctk.BOTH, expand=True)
+        self._devices_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
+        self._services_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
 
         self._progressbar = ctk.CTkProgressBar(master=self, mode="indeterminate", determinate_speed=2)
-        self._progressbar.pack(fill=ctk.BOTH, padx=PADDING, pady=(0, 20))
+        self._progressbar.pack(fill=ctk.BOTH, padx=STD_PADDING, pady=(0, 20))
 
     def _stop_scanning_devices(self):
         if self._scanning:
@@ -159,10 +158,10 @@ class ConnectionTab(ctk.CTkFrame):
             print(f"{advert.address} not connectable.")
 
     def _update_services(self, advert, connection: BLEConnection):
-        self._services_frame.configure(
-            label_text=f"{advert.complete_name}" if advert.complete_name else f"{advert.address.string}")
+        label = "Connected to " + f"{advert.complete_name}" if advert.complete_name else f"{advert.address.string}"
+        self._services_frame.configure(label_text=label)
 
-        for srv in PyBLEToolkit_SERVICES: #FIXME
+        for srv, tab_class in SERVICE_REGISTER.items():  # UPDATE
             if srv in connection:
                 print("Service found: " + str(srv))
                 self._services_frame.add_item(display_text=srv.__name__,

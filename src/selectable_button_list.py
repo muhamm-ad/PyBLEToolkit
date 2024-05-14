@@ -1,8 +1,10 @@
 import customtkinter as ctk
 
+from src import STD_PADDING
+
 BUTTON_GRID_CONFIG = {
-    "padx": 5,
-    "pady": (0, 5),
+    "padx": STD_PADDING,
+    "pady": (0, STD_PADDING),
     "sticky": "nsew"
 }
 
