@@ -1,11 +1,12 @@
-from src.services.exemple_ble_json_service import JSONService, JSONServiceTab
-from src.services.exemple_ble_uart_service import UARTService, UARTServiceTab
-from typing import Dict, Tuple, Type
-from src.services.service import AbstractService, ServiceTab
+from src.exemples.ble_json_service import JSONService, JSONServiceTab
+from src.exemples.ble_uart_service import UARTService, UARTServiceTab
+from typing import Dict, Type
+from src.service import AbstractService
+from src.service_tab import ServiceTab
 
 STD_PADDING = 5
-TAB_Y_PADDING = 5
-TAB_X_PADDING = 5
+TAB_Y_PADDING = STD_PADDING
+TAB_X_PADDING = STD_PADDING
 
 BLUE_COLOR = "#3B8ED0"
 TRANSPARENT_COLOR = "transparent"

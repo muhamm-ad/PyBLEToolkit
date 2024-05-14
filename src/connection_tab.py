@@ -1,6 +1,6 @@
 from adafruit_ble.advertising.standard import Advertisement
 from src import TRANSPARENT_COLOR, SERVICE_REGISTER, STD_PADDING
-from src.services.service import AbstractService
+from src.service import AbstractService
 from .selectable_button_list import SelectableButtonList
 from adafruit_ble import BLERadio, BLEConnection
 from collections import defaultdict
@@ -165,7 +165,7 @@ class ConnectionTab(ctk.CTkFrame):
             if srv in connection:
                 print("Service found: " + str(srv))
                 self._services_frame.add_item(display_text=srv.__name__,
-                                              command=partial(self._select_service, srv))
+                                              command=partial(self._select_service, connection[srv]))
 
     def _select_service(self, service):
         if not isinstance(service, AbstractService):
