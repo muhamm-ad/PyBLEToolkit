@@ -1,183 +1,179 @@
-import json
-
 from src.service import AbstractService
 from src.service_tab import ServiceTab
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
-
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from cairosvg import svg2png
+from PIL import Image
+import numpy as np
+import io
+import pygal
+import json
+from pygal.style import Style
+
+SOUND_MAX = 100
+HUMIDITY_MAX = 100
+
+# Define your custom style
+custom_style = Style(
+    background='white',
+    plot_background='white',
+    foreground='black',
+    foreground_strong='black',
+    foreground_subtle='black',
+    opacity='.6',
+    opacity_hover='.9',
+    transition='400ms ease-in',
+    colors=('#E80080', '#404040', '#9BC850', '#FF8000')
+)
 
 
 class JSONServiceTab(ServiceTab):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self._fig = Figure(figsize=(20, 20), dpi=100)
+        self._fig = Figure(dpi=100)
 
-        # Create subplots for each sensor type according to the desired layout
-        self._prox_ax = self._fig.add_subplot(5, 2, 1)
-        self._temp_ax = self._fig.add_subplot(5, 2, 2)
-        self._barom_ax = self._fig.add_subplot(5, 2, 3)
-        self._altitude_ax = self._fig.add_subplot(5, 2, 4)
-        self._color_ax = self._fig.add_subplot(5, 2, 5)
-        self._sound_ax = self._fig.add_subplot(5, 2, 6)
-        self._magnetic_ax = self._fig.add_subplot(5, 2, 7)
-        self._acce_ax = self._fig.add_subplot(5, 2, 8)
-        self._gyro_ax = self._fig.add_subplot(5, 2, 9)
-        self._humidity_ax = self._fig.add_subplot(5, 2, 10)
-
-        # Initialize data storage for plotting
-        self._prox_data = []
-        self._temp_data = []
-        self._barom_data = []
-        self._altitude_data = []
-        self._color_data = {'Red': [], 'Green': [], 'Blue': [], 'Clear': []}
-        self._sound_data = []
-        self._magnetic_data = {'x': [], 'y': [], 'z': []}
-        self._acce_data = {'x': [], 'y': [], 'z': []}
-        self._gyro_data = {'x': [], 'y': [], 'z': []}
-        self._humidity_data = []
-
-        # Initial setup for axes
-        self._setup_axes(self._prox_ax, title="Proximity")
-        self._setup_axes(self._temp_ax, title="Temperature", ylabel="C")
-        self._setup_axes(self._barom_ax, title="Barometric Pressure")
-        self._setup_axes(self._altitude_ax, title="Altitude", ylabel="m")
-        self._setup_axes(self._color_ax, title="Color", ylabel="Intensity")
-        self._setup_axes(self._sound_ax, title="Sound Level")
-        self._setup_axes(self._magnetic_ax, title="Magnetic")
-        self._setup_axes(self._acce_ax, title="Acceleration")
-        self._setup_axes(self._gyro_ax, title="Gyro")
-        self._setup_axes(self._humidity_ax, title="Humidity", ylabel="%")
+        self.initialize_data_storage()
+        self.setup_subplots()
+        self._setup_axes()
 
         # Add the canvas to Tkinter
         self._canvas = FigureCanvasTkAgg(self._fig, master=master)
         self._canvas.draw()
-        self._canvas.get_tk_widget().grid(**kwargs)
-
-        # Start the update loop
+        self._canvas.get_tk_widget().grid(sticky="nsew", **kwargs)
         self._update_plot()
 
-    def _setup_axes(self, ax, title=None, ylabel='Values'):
-        ax.set_title(title)
-        ax.set_xlabel('Time')
-        ax.set_ylabel(ylabel)
-        ax.grid(True)
-        ax.set_autoscale_on(True)
+        # Reduce padding and adjust layout
+        self._fig.set_tight_layout(True)
 
-    def update_data(self, new_data):
-        new_data = json.loads(new_data)
-        # This method should be called with the new sensor data
-        self._prox_data.append(float(new_data['Sensors']['Proximity']))
-        self._temp_data.append(float(new_data['Sensors']['Temperature'].replace(" C", "")))
-        self._barom_data.append(float(new_data['Sensors']['Barometric_pressure']))
-        self._altitude_data.append(float(new_data['Sensors']['Altitude'].replace(" m", "")))
+    def initialize_data_storage(self):
+        self._prox_data = []
+        self._temp_data = []
+        self._barom_data = []
+        self._altitude_data = []
+        self._color_data = {'Red': 0.0, 'Green': 0.0, 'Blue': 0.0, 'Clear': 0.0}
+        self._magnetic_data = {'x': [], 'y': [], 'z': []}
+        self._acce_data = {'x': [], 'y': [], 'z': []}
+        self._gyro_data = {'x': [], 'y': [], 'z': []}
+        self._sound_data = 0
+        self._humidity_data = 0
 
-        for color in self._color_data.keys():
-            self._color_data[color].append(float(new_data['Sensors']['Color'][color]))
+    def setup_subplots(self):
+        self._prox_ax = self._fig.add_subplot(7, 2, 1)  # Row 1, Column 1
+        self._temp_ax = self._fig.add_subplot(7, 2, 2)  # Row 1, Column 2
+        self._barom_ax = self._fig.add_subplot(7, 2, 3)  # Row 2, Column 1
+        self._altitude_ax = self._fig.add_subplot(7, 2, 4)  # Row 2, Column 2
 
-        self._sound_data.append(float(new_data['Sensors']['Sound_level']))
+        # Gauges subplot spans two rows in column 1, positioned at Rows 3 and 4
+        self._gauges_ax = self._fig.add_subplot(7, 2, (5, 7))  # Rows 3 and 4, Column 1
 
-        for axis in self._magnetic_data.keys():
-            self._magnetic_data[axis].append(float(new_data['Sensors']['Magnetic'][axis]))
+        self._color_ax = self._fig.add_subplot(7, 2, (6, 8))  # Rows 3 and 4, Column 2
 
-        for axis in self._acce_data.keys():
-            self._acce_data[axis].append(float(new_data['Sensors']['Acceleration'][axis]))
+        self._magnetic_ax = self._fig.add_subplot(7, 1, 5)  # Entire Row 5
+        self._acce_ax = self._fig.add_subplot(7, 1, 6)  # Entire Row 6
+        self._gyro_ax = self._fig.add_subplot(7, 1, 7)  # Entire Row 7
 
-        for axis in self._gyro_data.keys():
-            self._gyro_data[axis].append(float(new_data['Sensors']['Gyro'][axis]))
 
-        self._humidity_data.append(float(new_data['Sensors']['Humidity'].replace(" %", "")))
 
-        self._update_plot()
+    def _setup_axes(self):
+        # Setup the axes with titles and grid configuration
+        for ax, title, ylabel in [
+            (self._prox_ax, "Proximity", "Distance"),
+            (self._temp_ax, "Temperature", "Celsius"),
+            (self._barom_ax, "Barometric Pressure", "hPa"),
+            (self._altitude_ax, "Altitude", "Meters"),
+            (self._magnetic_ax, "Magnetic", "Field Strength"),
+            (self._acce_ax, "Acceleration", "m/s²"),
+            (self._gyro_ax, "Gyro", "Radians/sec"),
+        ]:
+            ax.set_title(title)
+            ax.set_ylabel(ylabel)
+            ax.grid(True)
+
+    def append_sensor_data(self, data):
+        self._prox_data.append(float(data['Sensors']['Proximity']))
+        self._temp_data.append(float(data['Sensors']['Temperature'].replace(" C", "")))
+        self._barom_data.append(float(data['Sensors']['Barometric_pressure']))
+        self._altitude_data.append(float(data['Sensors']['Altitude'].replace(" m", "")))
+
+        self._magnetic_data['x'].append(float(data['Sensors']['Magnetic']['x']))
+        self._magnetic_data['y'].append(float(data['Sensors']['Magnetic']['y']))
+        self._magnetic_data['z'].append(float(data['Sensors']['Magnetic']['z']))
+        self._acce_data['x'].append(float(data['Sensors']['Acceleration']['x']))
+        self._acce_data['y'].append(float(data['Sensors']['Acceleration']['y']))
+        self._acce_data['z'].append(float(data['Sensors']['Acceleration']['z']))
+        self._gyro_data['x'].append(float(data['Sensors']['Gyro']['x']))
+        self._gyro_data['y'].append(float(data['Sensors']['Gyro']['y']))
+        self._gyro_data['z'].append(float(data['Sensors']['Gyro']['z']))
+
+        self._sound_data = float(data['Sensors']['Sound_level'])
+        self._humidity_data = float(data['Sensors']['Humidity'].replace(" %", ""))
+
+        self._color_data['Red'] = float(data['Sensors']['Color']['Red'])
+        self._color_data['Green'] = float(data['Sensors']['Color']['Green'])
+        self._color_data['Blue'] = float(data['Sensors']['Color']['Blue'])
+        self._color_data['Clear'] = float(data['Sensors']['Color']['Clear'])
 
     def _update_plot(self):
+        self.clear_all()
+        self.redraw_all()
+        self._canvas.draw()  # Redraw canvas
+
+    def clear_all(self):
         # Clear previous data
-        self._prox_ax.cla()
-        self._temp_ax.cla()
-        self._barom_ax.cla()
-        self._altitude_ax.cla()
-        self._color_ax.cla()
-        self._sound_ax.cla()
-        self._magnetic_ax.cla()
-        self._acce_ax.cla()
-        self._gyro_ax.cla()
-        self._humidity_ax.cla()
+        for ax in [self._prox_ax, self._temp_ax, self._barom_ax, self._altitude_ax, self._gauges_ax,
+                   self._magnetic_ax, self._acce_ax, self._gyro_ax, self._color_ax]:
+            ax.cla()
 
-        # Re-setup axes
-        self._setup_axes(self._prox_ax, title="Proximity")
-        self._setup_axes(self._temp_ax, title="Temperature", ylabel="C")
-        self._setup_axes(self._barom_ax, title="Barometric Pressure")
-        self._setup_axes(self._altitude_ax, title="Altitude", ylabel="m")
-        self._setup_axes(self._color_ax, title="Color", ylabel="Intensity")
-        self._setup_axes(self._sound_ax, title="Sound Level")
-        self._setup_axes(self._magnetic_ax, title="Magnetic")
-        self._setup_axes(self._acce_ax, title="Acceleration")
-        self._setup_axes(self._gyro_ax, title="Gyro")
-        self._setup_axes(self._humidity_ax, title="Humidity", ylabel="%")
+    def redraw_all(self):
+        self._redraw_axes()
+        self._redraw_gauges()
+        self._redraw_colors()
 
-        # Plot new data
+    def _redraw_axes(self):
+        self._setup_axes()
+
         self._prox_ax.plot(self._prox_data)
         self._temp_ax.plot(self._temp_data)
         self._barom_ax.plot(self._barom_data)
         self._altitude_ax.plot(self._altitude_data)
 
-        for color in self._color_data.keys():
-            self._color_ax.plot(self._color_data[color], label=color)
-        self._color_ax.legend()
-
-        self._sound_ax.plot(self._sound_data)
-
-        for axis in self._magnetic_data.keys():
-            self._magnetic_ax.plot(self._magnetic_data[axis], label=axis)
+        self._magnetic_ax.plot(self._magnetic_data['x'], label='x')
+        self._magnetic_ax.plot(self._magnetic_data['y'], label='y')
+        self._magnetic_ax.plot(self._magnetic_data['z'], label='z')
         self._magnetic_ax.legend()
 
-        for axis in self._acce_data.keys():
-            self._acce_ax.plot(self._acce_data[axis], label=axis)
+        self._acce_ax.plot(self._acce_data['x'], label='x')
+        self._acce_ax.plot(self._acce_data['y'], label='y')
+        self._acce_ax.plot(self._acce_data['z'], label='z')
         self._acce_ax.legend()
 
-        for axis in self._gyro_data.keys():
-            self._gyro_ax.plot(self._gyro_data[axis], label=axis)
+        self._gyro_ax.plot(self._gyro_data['x'], label='x')
+        self._gyro_ax.plot(self._gyro_data['y'], label='y')
+        self._gyro_ax.plot(self._gyro_data['z'], label='z')
         self._gyro_ax.legend()
 
-        self._humidity_ax.plot(self._humidity_data)
+    def _redraw_gauges(self):
+        gauge = pygal.SolidGauge(inner_radius=0.70, half_pie=True,  style=custom_style)
+        gauge.add(title='Sound Level (dB)', values=[{'value': self._sound_data, 'max_value': SOUND_MAX}])
+        gauge.add(title='Humidity', values=[{'value': self._humidity_data, 'max_value': HUMIDITY_MAX}],
+                  formatter=lambda x: '{:.10g}%'.format(x))
+        svg_data = gauge.render()
+        png_image = svg2png(bytestring=svg_data)
+        image = Image.open(io.BytesIO(png_image))
+        self._gauges_ax.imshow(np.array(image), aspect='auto')
+        self._gauges_ax.axis('off')  # Hide axis
 
-        # Auto scale the axes
-        self._prox_ax.relim()
-        self._prox_ax.autoscale_view()
+    def _redraw_colors(self):
+        # TODO
+        self._color_ax.axis('off')
 
-        self._temp_ax.relim()
-        self._temp_ax.autoscale_view()
-
-        self._barom_ax.relim()
-        self._barom_ax.autoscale_view()
-
-        self._altitude_ax.relim()
-        self._altitude_ax.autoscale_view()
-
-        self._color_ax.relim()
-        self._color_ax.autoscale_view()
-
-        self._sound_ax.relim()
-        self._sound_ax.autoscale_view()
-
-        self._magnetic_ax.relim()
-        self._magnetic_ax.autoscale_view()
-
-        self._acce_ax.relim()
-        self._acce_ax.autoscale_view()
-
-        self._gyro_ax.relim()
-        self._gyro_ax.autoscale_view()
-
-        self._humidity_ax.relim()
-        self._humidity_ax.autoscale_view()
-
-        # Redraw canvas
-        self._canvas.draw()
-
+    def update_data(self, new_data):
+        self.append_sensor_data(json.loads(new_data))
+        self._update_plot()
 
 
 class JSONService(AbstractService):
