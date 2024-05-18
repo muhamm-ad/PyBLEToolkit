@@ -45,7 +45,7 @@ class ExJSONServiceTab(ServiceTab):
         self._setup_axes()
 
         # Add the canvas to Tkinter
-        self._canvas = FigureCanvasTkAgg(self._fig, master=master)
+        self._canvas = FigureCanvasTkAgg(self._fig, master=self)
         self._canvas.draw()
         self._canvas.get_tk_widget().grid(sticky="nsew", **kwargs)
         self._update_plot()
