@@ -19,7 +19,7 @@ Before you begin, ensure you have the following installed:
 
 After installation, you can start by creating a new BLE service frame. Here are the steps to integrate a new service into the toolkit:
 
-1. Create two objects: one for the service itself that inherits from `AbstractService` in [service.py](src/service.py), and another for the GUI of your service that inherits from `ServiceTab` in [service_tab.py](src/service_tab.py). See [examples](src/examples) for reference.
+1. Create two objects: one for the service itself that inherits from `AbstractService` in [service.py](src/service.py), and another for the GUI of your service that inherits from `ServiceTab` in [service_tab.py](src/service_tab.py). See [examples](docs/services) for reference.
 
 2. Register your service and GUI in the dictionary [SERVICE_REGISTER](src/__init__.py) like this:
 
