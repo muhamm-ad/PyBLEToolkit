@@ -3,19 +3,19 @@ from src.service_tab import ServiceTab
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
+from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import json
-import numpy as np
 from io import BytesIO
-from PIL import Image
 from cairosvg import svg2png
-import re
+from PIL import Image
+import numpy as np
 import pygal
 from pygal.style import Style
+import json
+import re
 
-# Constants
-MAX_DATA_POINTS = 10
+MAX_DATA_POINTS = 30
 SOUND_MAX = 100
 HUMIDITY_MAX = 100
 
@@ -34,14 +34,14 @@ CUSTOM_STYLE = Style(
 )
 
 
-class JSONServiceTab(ServiceTab):
+class ExJSONServiceTab(ServiceTab):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
         self._fig = Figure(dpi=100)
 
-        self.initialize_data_storage()
-        self.setup_subplots()
+        self._initialize_data_storage()
+        self._setup_subplots()
         self._setup_axes()
 
         # Add the canvas to Tkinter
@@ -53,36 +53,37 @@ class JSONServiceTab(ServiceTab):
         # Reduce padding and adjust layout
         self._fig.set_tight_layout(True)
 
-    def initialize_data_storage(self):
-        self._prox_data = {'xs': [], 'ys': []}
-        self._temp_data = {'xs': [], 'ys': []}
-        self._barom_data = {'xs': [], 'ys': []}
-        self._altitude_data = {'xs': [], 'ys': []}
-        self._color_data = {'Red': 0.0, 'Green': 0.0, 'Blue': 0.0, 'Clear': 0.0}
-        self._magnetic_data = {'x': {'xs': [], 'ys': []}, 'y': {'xs': [], 'ys': []}, 'z': {'xs': [], 'ys': []}}
-        self._acce_data = {'x': {'xs': [], 'ys': []}, 'y': {'xs': [], 'ys': []}, 'z': {'xs': [], 'ys': []}}
-        self._gyro_data = {'x': {'xs': [], 'ys': []}, 'y': {'xs': [], 'ys': []}, 'z': {'xs': [], 'ys': []}}
-        self._sound_data = 0
-        self._humidity_data = 0
+    def _initialize_data_storage(self):
+        self._xs = []
         self._data_count = 0
 
-    def setup_subplots(self):
-        self._prox_ax = self._fig.add_subplot(7, 2, 1)  # Row 1, Column 1
-        self._temp_ax = self._fig.add_subplot(7, 2, 2)  # Row 1, Column 2
-        self._barom_ax = self._fig.add_subplot(7, 2, 3)  # Row 2, Column 1
-        self._altitude_ax = self._fig.add_subplot(7, 2, 4)  # Row 2, Column 2
+        self._sensor_data = {
+            'Proximity': [],
+            'Temperature': [],
+            'Barometric Pressure': [],
+            'Altitude': [],
+            'Magnetic': {'x': [], 'y': [], 'z': []},
+            'Acceleration': {'x': [], 'y': [], 'z': []},
+            'Gyro': {'x': [], 'y': [], 'z': []},
+        }
+        self._color_data = {'Red': 0.0, 'Green': 0.0, 'Blue': 0.0, 'Clear': 0.0}
+        self._sound_data = 0
+        self._humidity_data = 0
 
-        # Gauges subplot spans two rows in column 1, positioned at Rows 3 and 4
-        self._gauges_ax = self._fig.add_subplot(7, 2, (5, 7))  # Rows 3 and 4, Column 1
-
-        self._color_ax = self._fig.add_subplot(7, 2, (6, 8))  # Rows 3 and 4, Column 2
-
-        self._magnetic_ax = self._fig.add_subplot(7, 1, 5)  # Entire Row 5
-        self._acce_ax = self._fig.add_subplot(7, 1, 6)  # Entire Row 6
-        self._gyro_ax = self._fig.add_subplot(7, 1, 7)  # Entire Row 7
+    def _setup_subplots(self):
+        self._prox_ax = self._fig.add_subplot(7, 2, 1)
+        self._temp_ax = self._fig.add_subplot(7, 2, 2)
+        self._barom_ax = self._fig.add_subplot(7, 2, 3)
+        self._altitude_ax = self._fig.add_subplot(7, 2, 4)
+        self._gauges_ax = self._fig.add_subplot(7, 2, (5, 7))
+        self._color_ax = self._fig.add_subplot(7, 2, (6, 8))
+        self._magnetic_ax = self._fig.add_subplot(7, 1, 5)
+        self._acce_ax = self._fig.add_subplot(7, 1, 6)
+        self._gyro_ax = self._fig.add_subplot(7, 1, 7)
 
     def _setup_axes(self):
-        # Setup the axes with titles and grid configuration
+        min_x, max_x = self._get_x_limits()
+
         for ax, title, ylabel in [
             (self._prox_ax, "Proximity", "Distance"),
             (self._temp_ax, "Temperature", "Celsius"),
@@ -93,53 +94,57 @@ class JSONServiceTab(ServiceTab):
             (self._gyro_ax, "Gyro", "Radians/sec"),
         ]:
             ax.set_title(title)
+            ax.set_xlim(left=min_x, right=max_x)
             ax.set_ylabel(ylabel)
             ax.grid(True)
 
+    def _get_x_limits(self):
+        min_x = max(0, self._data_count - MAX_DATA_POINTS) if self._data_count > MAX_DATA_POINTS else 0
+        max_x = self._data_count + 1 if self._data_count > MAX_DATA_POINTS else MAX_DATA_POINTS
+        return min_x, max_x
+
+    def _truncate_data(self):
+        self._xs = self._xs[-MAX_DATA_POINTS:]
+        for key in self._sensor_data:
+            if isinstance(self._sensor_data[key], dict):
+                for subkey in self._sensor_data[key]:
+                    self._sensor_data[key][subkey] = self._sensor_data[key][subkey][-MAX_DATA_POINTS:]
+            else:
+                self._sensor_data[key] = self._sensor_data[key][-MAX_DATA_POINTS:]
+
     def append_sensor_data(self, data):
         self._data_count += 1
+        self._xs.append(self._data_count)
 
-        self._append_data(self._prox_data, float(data['Sensors']['Proximity']))
-        self._append_data(self._temp_data, float(data['Sensors']['Temperature'].replace(" C", "")))
-        self._append_data(self._barom_data, float(data['Sensors']['Barometric_pressure']))
-        self._append_data(self._altitude_data, float(data['Sensors']['Altitude'].replace(" m", "")))
+        self._sensor_data['Proximity'].append(float(data['Sensors']['Proximity']))
+        self._sensor_data['Temperature'].append(float(data['Sensors']['Temperature'].replace(" C", "")))
+        self._sensor_data['Barometric Pressure'].append(float(data['Sensors']['Barometric_pressure']))
+        self._sensor_data['Altitude'].append(float(data['Sensors']['Altitude'].replace(" m", "")))
 
-        self._append_data(self._magnetic_data['x'], float(data['Sensors']['Magnetic']['x']))
-        self._append_data(self._magnetic_data['y'], float(data['Sensors']['Magnetic']['y']))
-        self._append_data(self._magnetic_data['z'], float(data['Sensors']['Magnetic']['z']))
-        self._append_data(self._acce_data['x'], float(data['Sensors']['Acceleration']['x']))
-        self._append_data(self._acce_data['y'], float(data['Sensors']['Acceleration']['y']))
-        self._append_data(self._acce_data['z'], float(data['Sensors']['Acceleration']['z']))
-        self._append_data(self._gyro_data['x'], float(data['Sensors']['Gyro']['x']))
-        self._append_data(self._gyro_data['y'], float(data['Sensors']['Gyro']['y']))
-        self._append_data(self._gyro_data['z'], float(data['Sensors']['Gyro']['z']))
+        for axis in ['x', 'y', 'z']:
+            self._sensor_data['Magnetic'][axis].append(float(data['Sensors']['Magnetic'][axis]))
+            self._sensor_data['Acceleration'][axis].append(float(data['Sensors']['Acceleration'][axis]))
+            self._sensor_data['Gyro'][axis].append(float(data['Sensors']['Gyro'][axis]))
 
         self._sound_data = float(data['Sensors']['Sound_level'])
         self._humidity_data = float(data['Sensors']['Humidity'].replace(" %", ""))
 
-        self._color_data['Red'] = float(data['Sensors']['Color']['Red'])
-        self._color_data['Green'] = float(data['Sensors']['Color']['Green'])
-        self._color_data['Blue'] = float(data['Sensors']['Color']['Blue'])
-        self._color_data['Clear'] = float(data['Sensors']['Color']['Clear'])
+        for color in self._color_data:
+            self._color_data[color] = float(data['Sensors']['Color'][color])
 
-    def _append_data(self, data_dict, value):
-        data_dict['ys'].append(value)
-        data_dict['xs'].extend(range(self._data_count, self._data_count + 1))
-        data_dict['xs'] = data_dict['xs'][-MAX_DATA_POINTS:]
-        data_dict['ys'] = data_dict['ys'][-MAX_DATA_POINTS:]
+        self._truncate_data()
 
     def _update_plot(self):
-        self.clear_all()
-        self.redraw_all()
+        self._clear_all()
+        self._redraw_all()
         self._canvas.draw()  # Redraw canvas
 
-    def clear_all(self):
-        # Clear previous data
+    def _clear_all(self):
         for ax in [self._prox_ax, self._temp_ax, self._barom_ax, self._altitude_ax, self._gauges_ax,
                    self._magnetic_ax, self._acce_ax, self._gyro_ax, self._color_ax]:
             ax.cla()
 
-    def redraw_all(self):
+    def _redraw_all(self):
         self._redraw_axes()
         self._redraw_gauges()
         self._redraw_colors()
@@ -147,32 +152,14 @@ class JSONServiceTab(ServiceTab):
     def _redraw_axes(self):
         self._setup_axes()
 
-        # Redraw each axis with new data
-        self._redraw_axis(self._prox_ax, self._prox_data, "Proximity")
-        self._redraw_axis(self._temp_ax, self._temp_data, "Temperature")
-        self._redraw_axis(self._barom_ax, self._barom_data, "Barometric Pressure")
-        self._redraw_axis(self._altitude_ax, self._altitude_data, "Altitude")
+        self._prox_ax.plot(self._xs, self._sensor_data['Proximity'], 'o-')
+        self._temp_ax.plot(self._xs, self._sensor_data['Temperature'], 'o-')
+        self._barom_ax.plot(self._xs, self._sensor_data['Barometric Pressure'], 'o-')
+        self._altitude_ax.plot(self._xs, self._sensor_data['Altitude'], 'o-')
 
-        self._redraw_multi_axis(self._magnetic_ax, self._magnetic_data, "Magnetic")
-        self._redraw_multi_axis(self._acce_ax, self._acce_data, "Acceleration")
-        self._redraw_multi_axis(self._gyro_ax, self._gyro_data, "Gyro")
-
-    def _redraw_axis(self, ax, data, label):
-        if data['ys']:
-            ax.plot(data['xs'], data['ys'], 'o-', label=label)
-            min_x = max(0, data['xs'][-1] - MAX_DATA_POINTS) if len(data['xs']) > MAX_DATA_POINTS else 0
-            max_x = data['xs'][-1] + 1 if len(data['xs']) > MAX_DATA_POINTS else MAX_DATA_POINTS
-            ax.set_xlim(left=min_x, right=max_x)
-            ax.legend()
-
-    def _redraw_multi_axis(self, ax, data, label):
-        if data['x']['ys']:
-            ax.plot(data['x']['xs'], data['x']['ys'], 'o-', label=f'{label} X')
-            ax.plot(data['y']['xs'], data['y']['ys'], 'o-', label=f'{label} Y')
-            ax.plot(data['z']['xs'], data['z']['ys'], 'o-', label=f'{label} Z')
-            min_x = max(0, data['x']['xs'][-1] - MAX_DATA_POINTS) if len(data['x']['xs']) > MAX_DATA_POINTS else 0
-            max_x = data['x']['xs'][-1] + 1 if len(data['x']['xs']) > MAX_DATA_POINTS else MAX_DATA_POINTS
-            ax.set_xlim(left=min_x, right=max_x)
+        for ax, key in [(self._magnetic_ax, 'Magnetic'), (self._acce_ax, 'Acceleration'), (self._gyro_ax, 'Gyro')]:
+            for axis in ['x', 'y', 'z']:
+                ax.plot(self._xs, self._sensor_data[key][axis], 'o-', label=axis)
             ax.legend()
 
     def _redraw_gauges(self):
@@ -196,7 +183,33 @@ class JSONServiceTab(ServiceTab):
         self._gauges_ax.axis('off')  # Hide axis
 
     def _redraw_colors(self):
-        # TODO: Implement color plot redraw logic
+        self._color_ax.cla()
+        self._color_ax.axis('off')
+
+        max_intensity = max(self._color_data.values()) if max(self._color_data.values()) > 0 else 1
+        normalized_color_data = {k: v / max_intensity for k, v in self._color_data.items()}
+
+        positions = [(1, 1), (3, 1), (1, 3), (3, 3)]
+        size = 2000
+
+        def get_rgb_color(color_name):
+            return {
+                'Red': (1, 0, 0),
+                'Green': (0, 1, 0),
+                'Blue': (0, 0, 1),
+                'Clear': (0.9, 0.9, 0.9)
+            }.get(color_name, (0, 0, 0))
+
+        for pos, (color, intensity) in zip(positions, normalized_color_data.items()):
+            rgb_color = get_rgb_color(color)
+            circle = plt.Circle(pos, 0.5, color=rgb_color, alpha=intensity)
+            self._color_ax.add_patch(circle)
+            self._color_ax.text(pos[0], pos[1], f'{color}\n{intensity:.2f}', horizontalalignment='center',
+                                verticalalignment='center')
+
+        self._color_ax.set_xlim(0, 4)
+        self._color_ax.set_ylim(0, 4)
+        self._color_ax.set_aspect('equal')
         self._color_ax.axis('off')
 
     def update_data(self, new_data):
@@ -204,48 +217,40 @@ class JSONServiceTab(ServiceTab):
         self._update_plot()
 
 
-class JSONService(AbstractService):
+class ExJSONService(AbstractService):
     uuid = VendorUUID("51ad213f-e568-4e35-84e4-67af89c79ef0")
-    settings = JSONCharacteristic(
-        uuid=VendorUUID("e077bdec-f18b-4944-9e9e-8b3a815162b4"),
-        properties=Characteristic.READ | Characteristic.WRITE,
-        initial_value={},
-    )
-
-    value = 0.0
-    segment_inc_z = "( 0, 0)"
     data = JSONCharacteristic(
         uuid=VendorUUID("528ff74b-fdb8-444c-9c64-3dd5da4135ae"),
         properties=Characteristic.READ,
         initial_value={
             "Sensors": {
-                "Proximity": f"{value:.2f}",
-                "Temperature": f"{value:.2f} C",
-                "Barometric_pressure": f"{value:.2f}",
-                "Altitude": f"{value:.2f} m",
+                "Proximity": f"{0:.2f}",
+                "Temperature": f"{0:.2f} C",
+                "Barometric_pressure": f"{0:.2f}",
+                "Altitude": f"{0:.2f} m",
                 "Color": {
-                    "Red": f"{value:.2f}",
-                    "Green": f"{value:.2f}",
-                    "Blue": f"{value:.2f}",
-                    "Clear": f"{value:.2f}"
+                    "Red": f"{0:.2f}",
+                    "Green": f"{0:.2f}",
+                    "Blue": f"{0:.2f}",
+                    "Clear": f"{0:.2f}"
                 },
-                "Sound_level": f"{value:.2f}",
+                "Sound_level": f"{0:.2f}",
                 "Magnetic": {
-                    "x": f"{value:.2f}",
-                    "y": f"{value:.2f}",
-                    "z": f"{value:.2f}"
+                    "x": f"{0:.2f}",
+                    "y": f"{0:.2f}",
+                    "z": f"{0:.2f}"
                 },
                 "Acceleration": {
-                    "x": f"{value:.2f}",
-                    "y": f"{value:.2f}",
-                    "z": f"{value:.2f}"
+                    "x": f"{0:.2f}",
+                    "y": f"{0:.2f}",
+                    "z": f"{0:.2f}"
                 },
                 "Gyro": {
-                    "x": f"{value:.2f}",
-                    "y": f"{value:.2f}",
-                    "z": f"{value:.2f}"
+                    "x": f"{0:.2f}",
+                    "y": f"{0:.2f}",
+                    "z": f"{0:.2f}"
                 },
-                "Humidity": f"{value:.2f} %",
+                "Humidity": f"{0:.2f} %",
             }
         }
     )
