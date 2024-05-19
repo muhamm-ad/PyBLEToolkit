@@ -1,4 +1,4 @@
-from src import TAB_X_PADDING, TAB_Y_PADDING
+from src import TAB_X_PADDING, TAB_Y_PADDING, TRANSPARENT_COLOR
 from src.connection_tab import ConnectionTab
 import customtkinter as ctk
 
@@ -6,8 +6,9 @@ from src.service_tabs_manager import ServiceTabsManager
 
 BASE_WINDOW_WIDTH = 2560
 BASE_WINDOW_HEIGHT = 1440
-APPEARANCE_MODE = "Dark"
+DEFAULT_APPEARANCE_MODE = "Dark"
 DEFAULT_COLOR_THEME = "blue"
+DEFAULT_APP_SCALING = 1.3
 
 
 class BLEToolkitApp(ctk.CTk):
@@ -27,7 +28,7 @@ class BLEToolkitApp(ctk.CTk):
         return connection_tab
 
     def make_data_tab(self):
-        data_tab = ctk.CTkFrame(master=self)
+        data_tab = ctk.CTkFrame(master=self, bg_color=TRANSPARENT_COLOR)
         data_tab.grid_columnconfigure(0, weight=1)
         data_tab.grid_rowconfigure(0, weight=1)
         return data_tab
@@ -60,8 +61,9 @@ class BLEToolkitApp(ctk.CTk):
 
 
 def initialize_app_settings():
-    ctk.set_appearance_mode(APPEARANCE_MODE)
+    ctk.set_appearance_mode(DEFAULT_APPEARANCE_MODE)
     ctk.set_default_color_theme(DEFAULT_COLOR_THEME)
+    ctk.set_widget_scaling(DEFAULT_APP_SCALING)
 
 
 if __name__ == '__main__':

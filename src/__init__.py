@@ -1,6 +1,5 @@
 from src.exemples.ble_json_service import ExJSONService, ExJSONServiceTab
-from src.exemples.ble_plotter_service import PlotterService, PlotterServiceTab
-from src.exemples.ble_uart_service import UARTService, UartServiceTab
+from src.exemples.ble_uart_service import UARTService, UARTServiceTab
 from typing import Dict, Type
 from src.service import AbstractService
 from src.service_tab import ServiceTab
@@ -15,6 +14,5 @@ TRANSPARENT_COLOR = "transparent"
 # Service register mapping services to their corresponding tab classes
 SERVICE_REGISTER: Dict[Type[AbstractService], Type[ServiceTab]] = {
     ExJSONService: ExJSONServiceTab,
-    # UARTService: UartServiceTab, # FIXME
-    PlotterService: PlotterServiceTab
+    UARTService: UARTServiceTab
 }
