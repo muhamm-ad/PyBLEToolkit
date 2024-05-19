@@ -1,5 +1,6 @@
 from adafruit_ble.advertising.standard import Advertisement
-from src import TRANSPARENT_COLOR, SERVICE_REGISTER, STD_PADDING
+from src.utils import TRANSPARENT_COLOR, STD_PADDING
+from src import SERVICE_REGISTER
 from src.service import AbstractService
 from .selectable_button_list import SelectableButtonList
 from adafruit_ble import BLERadio, BLEConnection

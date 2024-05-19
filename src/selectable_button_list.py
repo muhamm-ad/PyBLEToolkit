@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-from src import STD_PADDING
+from src.utils import STD_PADDING
 
 BUTTON_GRID_CONFIG = {
     "padx": STD_PADDING,

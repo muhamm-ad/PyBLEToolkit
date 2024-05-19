@@ -1,7 +1,8 @@
 import threading
 from threading import Thread
 from typing import Dict, Tuple
-from src import STD_PADDING, SERVICE_REGISTER
+from src.utils import STD_PADDING
+from src import SERVICE_REGISTER
 from service import AbstractService
 from service_tab import ServiceTab
 import time

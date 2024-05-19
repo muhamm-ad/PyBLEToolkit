@@ -1,4 +1,4 @@
-from src import TAB_X_PADDING, TAB_Y_PADDING, TRANSPARENT_COLOR
+from src.utils import TAB_X_PADDING, TAB_Y_PADDING, TRANSPARENT_COLOR
 from src.connection_tab import ConnectionTab
 import customtkinter as ctk
 
