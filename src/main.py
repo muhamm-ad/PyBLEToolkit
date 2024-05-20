@@ -2,8 +2,6 @@ from src.utils import TAB_X_PADDING, TAB_Y_PADDING, TRANSPARENT_COLOR
 from src.connection_tab import ConnectionTab
 import customtkinter as ctk
 
-from src.service_tabs_manager import ServiceTabsManager
-
 BASE_WINDOW_WIDTH = 2560
 BASE_WINDOW_HEIGHT = 1440
 DEFAULT_APPEARANCE_MODE = "Dark"
@@ -19,19 +17,6 @@ class BLEToolkitApp(ctk.CTk):
         self.data_tab = None
         self.connection_tab = None
         self.initialize_tabs()
-        self.data_tab_manager = ServiceTabsManager(master=self.data_tab)
-
-    def make_connection_tab(self):
-        connection_tab = ConnectionTab(master=self, device_cmd=self.select_device, service_cmd=self.select_service)
-        connection_tab.grid_columnconfigure(0, weight=1)
-        connection_tab.grid_rowconfigure(0, weight=1)
-        return connection_tab
-
-    def make_data_tab(self):
-        data_tab = ctk.CTkFrame(master=self, bg_color=TRANSPARENT_COLOR)
-        data_tab.grid_columnconfigure(0, weight=1)
-        data_tab.grid_rowconfigure(0, weight=1)
-        return data_tab
 
     def set_layout(self):
         self.title("BLEToolkit")
@@ -42,22 +27,28 @@ class BLEToolkitApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=4)
         self.grid_rowconfigure(0, weight=1)
 
-    def initialize_tabs(self):
-        self.connection_tab = self.make_connection_tab()
-        self.connection_tab.grid(row=0, column=0, padx=TAB_X_PADDING, pady=TAB_Y_PADDING, sticky="nsew")
+    def make_data_tab(self):
+        data_tab = ctk.CTkFrame(master=self, bg_color=TRANSPARENT_COLOR)
+        data_tab.grid_columnconfigure(0, weight=1)
+        data_tab.grid_rowconfigure(0, weight=1)
+        return data_tab
 
+    def make_connection_tab(self):
+        connection_tab = ConnectionTab(master=self, master_srv_tab=self.data_tab)
+        connection_tab.grid_columnconfigure(0, weight=1)
+        connection_tab.grid_rowconfigure(0, weight=1)
+        return connection_tab
+
+    def initialize_tabs(self):
         self.data_tab = self.make_data_tab()
         self.data_tab.grid(row=0, column=1, padx=TAB_X_PADDING, pady=TAB_Y_PADDING, sticky="nsew")
+
+        self.connection_tab = self.make_connection_tab()
+        self.connection_tab.grid(row=0, column=0, padx=TAB_X_PADDING, pady=TAB_Y_PADDING, sticky="nsew")
 
     def closing_handler(self):
         self.connection_tab.quit()
         self.quit()
-
-    def select_device(self, service):
-        pass
-
-    def select_service(self, service):
-        self.data_tab_manager.select_service(service)
 
 
 def initialize_app_settings():

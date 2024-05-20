@@ -2,7 +2,8 @@ from adafruit_ble.advertising.standard import Advertisement
 from src.utils import TRANSPARENT_COLOR, STD_PADDING
 from src import SERVICE_REGISTER
 from src.service import AbstractService
-from .selectable_button_list import SelectableButtonList
+from src.service_tabs_manager import ServiceTabsManager
+from src.selectable_button_list import SelectableButtonList
 from adafruit_ble import BLERadio, BLEConnection
 from collections import defaultdict
 from functools import partial
@@ -12,14 +13,15 @@ import time
 
 BLE = BLERadio()
 SLEEP_TIME = 2
-DEVICE_TIMEOUT = 10
+DEVICE_TIMEOUT = 5
+MESSAGE_TIMEOUT = 2
 
 
 class ConnectionTab(ctk.CTkFrame):
-    def __init__(self, master, device_cmd=None, service_cmd=None, **kwargs):
+    def __init__(self, master, master_srv_tab, **kwargs):
         super().__init__(master, **kwargs)
-        self.device_cmd = device_cmd
-        self.service_cmd = service_cmd
+        self._service_tabs_manager = ServiceTabsManager(master=master_srv_tab)
+
         self._configure_grid_layout()
 
         self._scan_button = None
@@ -27,6 +29,9 @@ class ConnectionTab(ctk.CTkFrame):
         self._devices_frame = None
         self._services_frame = None
         self._progressbar = None
+        self._message_label = None
+        self._message_clear_id = None
+        self._current_message = ""
         self._create_widgets()
 
         self._devices = defaultdict(lambda: {'last_seen': 0.0, 'advertisements': Advertisement})
@@ -34,10 +39,12 @@ class ConnectionTab(ctk.CTkFrame):
         self._scanning_thread = None
         self._thread_lock = threading.Lock()
 
+        self._current_connection = None
+
     def _configure_grid_layout(self):
         self.grid_columnconfigure(0, weight=1)
 
-    def _create_scanning_buttons(self):
+    def _create_scanning_frame(self):
         buttons_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
         buttons_frame.grid_columnconfigure(0, weight=1)
         buttons_frame.grid_columnconfigure(1, weight=1)
@@ -54,14 +61,16 @@ class ConnectionTab(ctk.CTkFrame):
         self._services_frame = SelectableButtonList(master=self, label_text="Services")
 
     def _create_widgets(self):
-        self._create_scanning_buttons().pack(pady=STD_PADDING, padx=STD_PADDING)
-
+        scanning_frame = self._create_scanning_frame()
         self._create_selectable_button_lists()
-        self._devices_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
-        self._services_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
-
         self._progressbar = ctk.CTkProgressBar(master=self, mode="indeterminate", determinate_speed=2)
-        self._progressbar.pack(fill=ctk.BOTH, padx=STD_PADDING, pady=(20, 20))
+        self._message_label = ctk.CTkLabel(master=self, text="", anchor="center")
+
+        scanning_frame.pack(pady=STD_PADDING, padx=STD_PADDING)
+        self._devices_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
+        self._progressbar.pack(fill=ctk.BOTH, padx=STD_PADDING, pady=(0, 20))
+        self._services_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
+        self._message_label.pack(padx=STD_PADDING, pady=(0, STD_PADDING), fill=ctk.BOTH)
 
     def _stop_scanning_devices(self):
         if self._scanning:
@@ -71,6 +80,7 @@ class ConnectionTab(ctk.CTkFrame):
         self._progressbar.stop()
         self._scan_button.configure(state=ctk.NORMAL)
         self._stop_button.configure(state=ctk.DISABLED)
+        self._update_message("Stopped scanning")
 
     def _start_scanning_devices(self):
         if not self._scanning:
@@ -80,7 +90,8 @@ class ConnectionTab(ctk.CTkFrame):
                 self._scanning_thread.start()
         self._progressbar.start()
         self._scan_button.configure(state=ctk.DISABLED)
-        self._stop_button.configure(state=ctk.NORMAL)  # Enable the Stop button
+        self._stop_button.configure(state=ctk.NORMAL)
+        self._update_message("Scanning for devices...")
 
     def _scan_for_devices_background(self):
         while True:
@@ -90,6 +101,7 @@ class ConnectionTab(ctk.CTkFrame):
 
             except Exception as e:
                 print(f"Error during continuous scan: {e}")
+                self._update_message(f"Error during scan", "red", timeout=MESSAGE_TIMEOUT)
             finally:
                 BLE.stop_scan()
                 if not self._scanning:
@@ -142,21 +154,33 @@ class ConnectionTab(ctk.CTkFrame):
 
     def quit(self):
         self._stop_scanning_devices()
+        self._disconnect_current_connection()
+
+    def _disconnect_current_connection(self):
+        if self._current_connection is not None:
+            self._service_tabs_manager.quit()
+            self._current_connection.disconnect()
 
     def _select_device(self, advert: Advertisement):
-        self.device_cmd(advert)
-        if not BLE.connected and advert.connectable:
-            print(f"Connecting to {advert.address}...")
+        if advert.connectable:
+            if BLE.connected:
+                self._disconnect_current_connection()
 
-            self._stop_scanning_devices()
+            self._update_message(f"Connecting to {advert.address.string}...")
+            print(f"Connecting to {advert.address.string}...")
+
             connection = BLE.connect(advert, timeout=3)
             if connection and connection.connected:
+                self._update_message("Connected")
                 print("Connected")
+                self._current_connection = connection
                 self._update_services(advert, connection)
             else:
-                print(f"{advert.address} not Connected !!!")
+                self._update_message(f"{advert.address.string} not Connected !!!", "red", timeout=MESSAGE_TIMEOUT)
+                print(f"{advert.address.string} not Connected !!!")
         else:
-            print(f"{advert.address} not connectable.")
+            self._update_message(f"{advert.address.string} not connectable.", "red", timeout=MESSAGE_TIMEOUT)
+            print(f"{advert.address.string} not connectable.")
 
     def _update_services(self, advert, connection: BLEConnection):
         label = "Connected to " + f"{advert.complete_name}" if advert.complete_name else f"{advert.address.string}"
@@ -170,6 +194,26 @@ class ConnectionTab(ctk.CTkFrame):
 
     def _select_service(self, service):
         if not isinstance(service, AbstractService):
+            self._update_message("Not an instance of AbstractService", "red", timeout=MESSAGE_TIMEOUT)
             print("Error: Provided service is not an instance of AbstractService")
         else:
-            self.service_cmd(service)
+            self._service_tabs_manager.select_service(service)
+
+    def _update_message(self, message: str, color: str = "white", timeout: int = None):
+        if self._message_clear_id is not None:
+            self.after_cancel(self._message_clear_id)  # Cancel any existing scheduled clear
+
+        self._message_label.configure(text=message, text_color=color)
+
+        if timeout is not None:
+            # Schedule to clear the message and revert to the continuous message
+            self._message_clear_id = self.after(timeout * 1000, self._clear_message, self._current_message,
+                                                self._current_message_color)
+        else:
+            self._current_message = message  # Keep track of the current continuous message
+            self._current_message_color = color  # Keep track of the current continuous message color
+            self._message_clear_id = None
+
+    def _clear_message(self, message, color):
+        self._message_label.configure(text=message, text_color=color)  # Revert to the continuous message and color
+        self._message_clear_id = None

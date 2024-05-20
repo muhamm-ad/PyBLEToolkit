@@ -7,7 +7,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import customtkinter as ctk
 import re
 
-
 MAX_DATA_POINTS = 1000
 TRANSPARENT_COLOR = "transparent"
 
@@ -17,6 +16,7 @@ class UARTPlotterTab(ctk.CTkFrame):
         super().__init__(master, fg_color=TRANSPARENT_COLOR, bg_color=TRANSPARENT_COLOR, **kwargs)
 
         self._fig = Figure(dpi=100)
+        self._fig.set_tight_layout(True)  # Reduce padding and adjust layout
 
         # Initialize data storage
         self._xs = []
@@ -35,8 +35,6 @@ class UARTPlotterTab(ctk.CTkFrame):
 
         self._create_buttons()
         self._create_scale()
-
-        self._fig.set_tight_layout(True)
 
         self._plot = True
         self.stop_plotting()

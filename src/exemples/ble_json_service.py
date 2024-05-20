@@ -39,6 +39,7 @@ class ExJSONServiceTab(ServiceTab):
         super().__init__(master, **kwargs)
 
         self._fig = Figure(dpi=100)
+        self._fig.set_tight_layout(True)  # Reduce padding and adjust layout
 
         self._initialize_data_storage()
         self._setup_subplots()
@@ -49,9 +50,6 @@ class ExJSONServiceTab(ServiceTab):
         self._canvas.draw()
         self._canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
         self._update_plot()
-
-        # Reduce padding and adjust layout
-        self._fig.set_tight_layout(True)
 
     def _initialize_data_storage(self):
         self._xs = []
