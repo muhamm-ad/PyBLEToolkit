@@ -1,11 +1,12 @@
 from src.service import AbstractService
+from src.utils import STD_PADDING
 from adafruit_ble.services.nordic import UARTService as NordicUARTService
 from src.service_tab import ServiceTab
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import customtkinter as ctk
+import re
 
-from src.utils import STD_PADDING
 
 MAX_DATA_POINTS = 1000
 TRANSPARENT_COLOR = "transparent"
@@ -94,25 +95,28 @@ class UARTPlotterTab(ctk.CTkFrame):
 
     def update_data(self, data):
         if self._plot:
-            # Split the incoming data into lines and convert each to float
+            # Validate the incoming data against a specific pattern (e.g., floating point numbers)
+            pattern = re.compile(r'^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$')
             values = str(data.decode('utf-8')).strip().split('\n')
-            new_values = [float(value) for value in values if value]
 
-            # Update the xs and ys lists with new data
-            self._xs.extend(range(len(self._xs), len(self._xs) + len(new_values)))
-            self._ys.extend(new_values)
+            if all(pattern.match(value) for value in values if value):  # Ensure all values match the pattern
+                new_values = [float(value) for value in values if value]
 
-            # Adjust x-axis range based on the scale value
-            x_range = self.range_scale.get()
-            min_x = max(0, self._xs[-1] - x_range) if len(self._xs) > x_range else 0
-            max_x = self._xs[-1] + 1 if len(self._xs) > x_range else x_range
+                # Update the xs and ys lists with new data
+                self._xs.extend(range(len(self._xs), len(self._xs) + len(new_values)))
+                self._ys.extend(new_values)
 
-            # Efficiently update the plot
-            self._ax.clear()
-            self._setup_axis()
-            self._ax.plot(self._xs, self._ys, color='red')
-            self._ax.set_xlim(left=min_x, right=max_x)
-            self._canvas.draw()
+                # Adjust x-axis range based on the scale value
+                x_range = self.range_scale.get()
+                min_x = max(0, self._xs[-1] - x_range) if len(self._xs) > x_range else 0
+                max_x = self._xs[-1] + 1 if len(self._xs) > x_range else x_range
+
+                # Efficiently update the plot
+                self._ax.clear()
+                self._setup_axis()
+                self._ax.plot(self._xs, self._ys, color='red')
+                self._ax.set_xlim(left=min_x, right=max_x)
+                self._canvas.draw()
 
 
 class UARTTerminalTab(ctk.CTkFrame):
@@ -133,11 +137,11 @@ class UARTTerminalTab(ctk.CTkFrame):
         self._create_widgets()
 
     def _create_widgets(self):
-        self._creat_option_widgets()
+        self._create_option_widgets()
         self._create_rx_widgets()
         self._create_tx_widgets()
 
-    def _creat_option_widgets(self):
+    def _create_option_widgets(self):
         self.options_frame = ctk.CTkFrame(master=self)
         self.options_frame.grid(row=0, column=0, columnspan=4, sticky="nsew")
         self.options_frame.grid_rowconfigure(0, weight=1)
