@@ -47,7 +47,7 @@ class ExJSONServiceTab(ServiceTab):
         # Add the canvas to Tkinter
         self._canvas = FigureCanvasTkAgg(self._fig, master=self)
         self._canvas.draw()
-        self._canvas.get_tk_widget().grid(sticky="nsew", **kwargs)
+        self._canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
         self._update_plot()
 
         # Reduce padding and adjust layout

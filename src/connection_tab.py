@@ -61,7 +61,7 @@ class ConnectionTab(ctk.CTkFrame):
         self._services_frame.pack(padx=STD_PADDING, pady=STD_PADDING, fill=ctk.BOTH, expand=True)
 
         self._progressbar = ctk.CTkProgressBar(master=self, mode="indeterminate", determinate_speed=2)
-        self._progressbar.pack(fill=ctk.BOTH, padx=STD_PADDING, pady=(0, 20))
+        self._progressbar.pack(fill=ctk.BOTH, padx=STD_PADDING, pady=(20, 20))
 
     def _stop_scanning_devices(self):
         if self._scanning:
@@ -149,7 +149,7 @@ class ConnectionTab(ctk.CTkFrame):
             print(f"Connecting to {advert.address}...")
 
             self._stop_scanning_devices()
-            connection = BLE.connect(advert)
+            connection = BLE.connect(advert, timeout=3)
             if connection and connection.connected:
                 print("Connected")
                 self._update_services(advert, connection)

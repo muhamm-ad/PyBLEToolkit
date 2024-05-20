@@ -148,7 +148,7 @@ class UARTTerminalTab(ctk.CTkFrame):
         self.clear_button = ctk.CTkButton(master=self.options_frame, text="Clear", command=self.clear_received)
         self.clear_button.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsw")
         self.view_mode_options = ctk.CTkOptionMenu(master=self.options_frame, values=["text", "hex"],
-                                                   command=self.set_view_mode)
+                                                   command=self.set_view_mode, anchor="center")
         self.view_mode_options.grid(row=0, column=1, padx=STD_PADDING, pady=STD_PADDING, sticky="nsw")
         self.terminal_mode_switch = ctk.CTkSwitch(master=self.options_frame, text="Terminal Mode",
                                                   command=self.toggle_terminal_mode)

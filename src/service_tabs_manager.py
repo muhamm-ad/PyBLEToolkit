@@ -32,21 +32,22 @@ class ServiceTabsManager:
             self._current_service = service
 
         if not self._is_service_running(service):
+            service_tab = SERVICE_REGISTER[type(service)](self._master)
+
             def task():
                 while True:
                     try:
                         data = service.read()
                         if data:
-                            with self._thread_lock:
-                                self._master.after(0, lambda d=data: self._current_service_tab.update_data(d))
+                            # Ensure the update happens in the main thread
+                            self._master.after(0, lambda d=data: service_tab.update_data(d))
                         time.sleep(1)  # Consider adjusting sleep duration based on your application's needs
                     except Exception as e:
-                        print(f"Error during updating data: {e}")
+                        print(f"ServiceTabsManager Error during updating data: {e}")
 
-            thread = threading.Thread(target=task)
-            thread.daemon = True
-            self._service_threads[service] = (thread, SERVICE_REGISTER[type(service)](self._master))
-            thread.start()
+            with self._thread_lock:
+                self._service_threads[service] = (Thread(target=task, daemon=True), service_tab)
+                self._service_threads[service][0].start()
 
         if need_switch:
             self._switch_service_tab(service)
