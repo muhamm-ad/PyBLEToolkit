@@ -1,54 +1,52 @@
-from src.utils import TAB_X_PADDING, TAB_Y_PADDING, TRANSPARENT_COLOR
-from src.connection_tab import ConnectionTab
 import customtkinter as ctk
+from adafruit_ble import BLEConnection
+from src import SERVICE_REGISTER, AbstractService
+from src.connection_tab import ConnectionTab
+from src.service_tabs import ServiceTabs
+from typing import Dict
 
 BASE_WINDOW_WIDTH = 2560
 BASE_WINDOW_HEIGHT = 1440
 DEFAULT_APPEARANCE_MODE = "Dark"
 DEFAULT_COLOR_THEME = "blue"
 DEFAULT_APP_SCALING = 1.3
+STD_PADDING = 5
 
 
 class BLEToolkitApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.set_layout()
 
-        self.data_tab = None
-        self.connection_tab = None
-        self.initialize_tabs()
-
-    def set_layout(self):
         self.title("BLEToolkit")
         self.geometry(f"{BASE_WINDOW_WIDTH}x{BASE_WINDOW_HEIGHT}")
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
 
         self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=4)
+        self.grid_columnconfigure(1, weight=10)
         self.grid_rowconfigure(0, weight=1)
 
-    def make_data_tab(self):
-        data_tab = ctk.CTkFrame(master=self, bg_color=TRANSPARENT_COLOR)
-        data_tab.grid_columnconfigure(0, weight=1)
-        data_tab.grid_rowconfigure(0, weight=1)
-        return data_tab
+        self.connection_tab = ConnectionTab(master=self, services_cmd=self.update_services_cmd)
+        self.connection_tab.grid_columnconfigure(0, weight=1)
+        self.connection_tab.grid_rowconfigure(0, weight=1)
+        self.connection_tab.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
 
-    def make_connection_tab(self):
-        connection_tab = ConnectionTab(master=self, master_srv_tab=self.data_tab)
-        connection_tab.grid_columnconfigure(0, weight=1)
-        connection_tab.grid_rowconfigure(0, weight=1)
-        return connection_tab
-
-    def initialize_tabs(self):
-        self.data_tab = self.make_data_tab()
-        self.data_tab.grid(row=0, column=1, padx=TAB_X_PADDING, pady=TAB_Y_PADDING, sticky="nsew")
-
-        self.connection_tab = self.make_connection_tab()
-        self.connection_tab.grid(row=0, column=0, padx=TAB_X_PADDING, pady=TAB_Y_PADDING, sticky="nsew")
+        self.service_tabs = ServiceTabs(master=self)
+        self.service_tabs.grid_columnconfigure(0, weight=1)
+        self.service_tabs.grid_rowconfigure(0, weight=1)
+        self.service_tabs.grid(row=0, column=1, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
 
     def closing_handler(self):
-        self.connection_tab.quit()
+        self.service_tabs.quit_()
+        self.connection_tab.quit_()
         self.quit()
+
+    def update_services_cmd(self, connection: BLEConnection):
+        services_dict: Dict[str, AbstractService] = {}
+        for srv in SERVICE_REGISTER.keys():
+            if srv in connection:
+                print("Service found: " + str(srv))
+                services_dict[srv.__name__] = connection[srv]
+        self.service_tabs.update_services(services_dict)
 
 
 def initialize_app_settings():

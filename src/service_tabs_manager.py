@@ -3,17 +3,17 @@ from threading import Thread
 from typing import Dict, Tuple
 from src.utils import STD_PADDING
 from src import SERVICE_REGISTER
-from service import AbstractService
-from service_tab import ServiceTab
+from abstract_service import AbstractService
+from abstract_service_tab import AbstractServiceTab
 import time
 
 
 class ServiceTabsManager:
     def __init__(self, master):
         self._master = master
-        self._current_service_tab = ServiceTab(master=self._master)
+        self._current_service_tab = AbstractServiceTab(master=self._master)
         self._current_service = None
-        self._service_threads: Dict[AbstractService, Tuple[Thread, ServiceTab, bool]] = {}
+        self._service_threads: Dict[AbstractService, Tuple[Thread, AbstractServiceTab, bool]] = {}
         self._thread_lock = threading.Lock()
         self._running = True  # Add a flag to control the running state
 
