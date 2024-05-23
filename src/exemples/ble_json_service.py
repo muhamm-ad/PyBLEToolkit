@@ -1,5 +1,5 @@
-from src.service import AbstractService
-from src.service_tab import ServiceTab
+from src.abstract_service import AbstractService
+from src.abstract_service_tab import AbstractServiceTab
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
@@ -34,7 +34,7 @@ CUSTOM_STYLE = Style(
 )
 
 
-class ExJSONServiceTab(ServiceTab):
+class ExJSONServiceTab(AbstractServiceTab):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 

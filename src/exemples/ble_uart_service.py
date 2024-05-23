@@ -1,19 +1,19 @@
-from src.service import AbstractService
+from src.abstract_service import AbstractService
 from src.utils import STD_PADDING
 from adafruit_ble.services.nordic import UARTService as NordicUARTService
-from src.service_tab import ServiceTab
+from src.abstract_service_tab import AbstractServiceTab
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import customtkinter as ctk
 import re
 
-MAX_DATA_POINTS = 1000
+MAX_DATA_POINTS = 1000 # TODO : add to doc
 TRANSPARENT_COLOR = "transparent"
 
 
 class UARTPlotterTab(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
-        super().__init__(master, fg_color=TRANSPARENT_COLOR, bg_color=TRANSPARENT_COLOR, **kwargs)
+        super().__init__(master, **kwargs)
 
         self._fig = Figure(dpi=100)
         self._fig.set_tight_layout(True)  # Reduce padding and adjust layout
@@ -121,7 +121,7 @@ class UARTTerminalTab(ctk.CTkFrame):
     PLACE_HOLDER_MSG = "Type in a message to send"
 
     def __init__(self, master, **kwargs):
-        super().__init__(master, fg_color=TRANSPARENT_COLOR, bg_color=TRANSPARENT_COLOR, **kwargs)
+        super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
@@ -132,9 +132,6 @@ class UARTTerminalTab(ctk.CTkFrame):
         self.terminal_mode = False
         self.auto_scroll = True
 
-        self._create_widgets()
-
-    def _create_widgets(self):
         self._create_option_widgets()
         self._create_rx_widgets()
         self._create_tx_widgets()
@@ -165,7 +162,7 @@ class UARTTerminalTab(ctk.CTkFrame):
             self.auto_scroll_switch.deselect()
 
     def _create_rx_widgets(self):
-        self.receiving_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
+        self.receiving_frame = ctk.CTkFrame(master=self)
         self.receiving_frame.grid(row=1, column=0, columnspan=4, sticky="nsew")
         self.receiving_frame.grid_columnconfigure(0, weight=1)
         self.receiving_frame.grid_rowconfigure(0, weight=0)
@@ -176,7 +173,7 @@ class UARTTerminalTab(ctk.CTkFrame):
         self.data_display.grid(row=1, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
 
     def _create_tx_widgets(self):
-        self.sending_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
+        self.sending_frame = ctk.CTkFrame(master=self)
         self.sending_frame.grid(row=2, column=0, columnspan=4, sticky="nsew")
         self.sending_frame.grid_columnconfigure(0, weight=0)
         self.sending_frame.grid_columnconfigure(1, weight=1)
@@ -224,7 +221,7 @@ class UARTTerminalTab(ctk.CTkFrame):
             self.data_display.see(ctk.END)
 
 
-class UARTServiceTab(ServiceTab):
+class UARTServiceTab(AbstractServiceTab):
     def __init__(self, master, **kwargs):
         super().__init__(master, bg_color="transparent", **kwargs)
 

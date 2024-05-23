@@ -9,6 +9,8 @@ def abstractmethod(method):
 
 
 class AbstractService(Service):
+    uuid = None
+
     def __init__(self, service=None):
         super().__init__(service=service)
 
@@ -19,3 +21,6 @@ class AbstractService(Service):
     @abstractmethod
     def write(self):
         pass
+
+    def get_uuid(self) -> str:
+        return str(self.uuid)
