@@ -21,7 +21,7 @@ The `UARTService` class inherits from `NordicUARTService` and `AbstractService` 
 
 ## GUI Implementation
 
-The `UARTServiceTab` class inherits from `ServiceTab` and provides a visual representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface. See [UARTServiceTab](../../src/services/uart_service.py).
+The `UARTServiceTab` class inherits from `AbstractServiceTab` and provides a visual representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface. See [UARTServiceTab](../../src/services/uart_service.py).
 
 It is composed of two tab views:
 - **Plotter**: This tab plots incoming floating-point numbers using matplotlib and customtkinter. It features controls to start and stop plotting, clear the plot, and adjust the x-axis range.
@@ -48,7 +48,7 @@ We register the `UARTService` with the corresponding tab GUI `UARTServiceTab` in
 # In src/__init__.py
 from src.services.uart_service import UARTService, UARTServiceTab
 
-SERVICE_REGISTER: Dict[Type[AbstractService], Type[ServiceTab]] = {
+SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
     UARTService: UARTServiceTab,
 }
 ```

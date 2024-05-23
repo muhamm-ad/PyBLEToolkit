@@ -18,7 +18,7 @@ The `ExJSONService` class inherits from `AbstractService` and defines the BLE ch
 
 ## GUI Implementation
 
-The `ExJSONServiceTab` class inherits from `ServiceTab` and provides a visual representation of the sensor data using matplotlib and pygal. See [ExJSONServiceTab](../../src/exemples/ble_json_service.py).
+The `ExJSONServiceTab` class inherits from `AbstractServiceTab` and provides a visual representation of the sensor data using matplotlib and pygal. See [ExJSONServiceTab](../../src/exemples/ble_json_service.py).
 
 ## Protocol
 
@@ -79,7 +79,7 @@ To use the `ExJSONService` and `ExJSONServiceTab`, register them in the `SERVICE
 # In src/__init__.py
 from src.examples.ble_json_service import ExJSONService, ExJSONServiceTab
 
-SERVICE_REGISTER: Dict[Type[AbstractService], Type[ServiceTab]] = {
+SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
     ExJSONService: ExJSONServiceTab,
     # ...
 }
@@ -100,7 +100,7 @@ The UUIDs used in this example are for demonstration purposes only.
 This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending JSON data with the following code:
 
 ```python
-from src.service_tab import ServiceTab
+from src.abstract_service_tab import AbstractServiceTab
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic

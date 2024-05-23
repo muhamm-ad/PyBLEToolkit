@@ -5,7 +5,7 @@ adafruit-circuitpython-busdevice==5.2.9
 adafruit-circuitpython-connectionmanager==2.0.0
 adafruit-circuitpython-requests==3.2.8
 adafruit-circuitpython-typing==1.10.3
-Adafruit-PlatformDetect==3.62.0
+Adafruit-PlatformDetect==3.63.0
 Adafruit-PureIO==1.1.11
 async-timeout==4.0.3
 bleak==0.20.2
@@ -14,6 +14,7 @@ CairoSVG==2.7.1
 cffi==1.16.0
 contourpy==1.2.1
 cssselect2==0.7.0
+CTkListbox==1.4
 customtkinter==5.2.2
 cycler==0.12.1
 darkdetect==0.8.0
