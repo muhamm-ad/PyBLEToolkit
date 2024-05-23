@@ -85,10 +85,11 @@ class DevicesBox(CTkListbox):
 
 
 class ConnectionTab(ctk.CTkFrame):
-    def __init__(self, master, services_cmd, **kwargs):
+    def __init__(self, master, service_connect_command, service_disconnect_command, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
-        self._services_cmd = services_cmd
+        self._srv_connect_cmd = service_connect_command
+        self._srv_disconnect_cmd = service_disconnect_command
 
         self._devices = defaultdict(lambda: {'last_seen': 0.0, 'advertisements': Advertisement})
         self._scanning: bool = False
@@ -173,7 +174,7 @@ class ConnectionTab(ctk.CTkFrame):
             if self._current_connection and self._current_connection.connected:
                 self._message_label.update_message(message="Connected", color="green")
                 # print("Connected")
-                self._services_cmd(self._current_connection)
+                self._srv_connect_cmd(self._current_connection)
             else:
                 self._message_label.update_message(message="Not Connected", color="red", timeout=MESSAGE_TIMEOUT)
                 # print(f"{self._selected_advert.address.string} not Connected")
@@ -182,10 +183,13 @@ class ConnectionTab(ctk.CTkFrame):
             # print(f"{self._selected_advert.address.string} not connectable.")
 
     def _disconnect_cmd(self):
+        self._message_label.update_message(message="Disconnecting ...", color="white")
         self._disconnect_button.configure(state=ctk.DISABLED)
-        self._message_label.update_message(message="Disconnecting ...", color="white")  # FIXME
+        self._srv_disconnect_cmd()
         self._disconnect_current_connection()
         self._connect_button.configure(state=ctk.NORMAL)
+        self._message_label.update_message(message="Disconnected", color="white",
+                                           timeout=MESSAGE_TIMEOUT, clear_after=True)
 
     def _scan_for_devices_background(self):
         while True:

@@ -21,6 +21,7 @@ class ServiceTabsManager:
         return service in self._service_threads and self._service_threads[service][0].is_alive()
 
     def _switch_service_tab(self, service: AbstractService):
+
         with self._thread_lock:
             self._current_service_tab.grid_remove()
             self._current_service_tab = self._service_threads[service][1]
@@ -41,22 +42,30 @@ class ServiceTabsManager:
                         data = service.read()
                         if data:
                             self._master.after(0, lambda d=data: service_tab.update_data(d))
-                        time.sleep(1)
+                        time.sleep(1)  # TODO: add to doc
                     except Exception as e:
-                        print(f"ServiceTabsManager Error during updating data: {e}")
+                        print(f"ServiceTabsManager: Error during updating data: {e}")
 
             running_flag = lambda: self._running
 
             with self._thread_lock:
-                self._service_threads[service] = (Thread(target=task, args=(running_flag,), daemon=True), service_tab, running_flag)
+                thread = Thread(target=task, args=(running_flag,), daemon=True)
+                self._service_threads[service] = (thread, service_tab, running_flag)
                 self._service_threads[service][0].start()
 
         if need_switch:
             self._switch_service_tab(service)
 
-    def quit(self):
+    def quit_(self):
         if self._service_threads:  # Check if it is not empty
-            with self._thread_lock:
+            # with self._thread_lock:
                 self._running = False  # Set the flag to stop all threads
                 for service, (thread, service_tab, running_flag) in self._service_threads.items():
                     thread.join()  # Wait for each thread to finish
+                    service_tab.grid_remove()  # Remove the service tab from the grid
+                    service_tab.destroy()  # Destroy the frame to free up resources
+
+                self._service_threads.clear()  # Clear the dictionary of service threads
+                self._current_service_tab = AbstractServiceTab(master=self._master)
+                self._current_service = None
+                self._service_threads = {}

@@ -25,28 +25,24 @@ class BLEToolkitApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=10)
         self.grid_rowconfigure(0, weight=1)
 
-        self.connection_tab = ConnectionTab(master=self, services_cmd=self.update_services_cmd)
-        self.connection_tab.grid_columnconfigure(0, weight=1)
-        self.connection_tab.grid_rowconfigure(0, weight=1)
-        self.connection_tab.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
-
         self.service_tabs = ServiceTabs(master=self)
         self.service_tabs.grid_columnconfigure(0, weight=1)
         self.service_tabs.grid_rowconfigure(0, weight=1)
         self.service_tabs.grid(row=0, column=1, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
 
+        self.connection_tab = ConnectionTab(master=self,
+                                            service_connect_command=self.service_tabs.connect,
+                                            service_disconnect_command=self.service_tabs.disconnect)
+        self.connection_tab.grid_columnconfigure(0, weight=1)
+        self.connection_tab.grid_rowconfigure(0, weight=1)
+        self.connection_tab.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
+
     def closing_handler(self):
-        self.service_tabs.quit_()
+        self.service_tabs.disconnect()
         self.connection_tab.quit_()
         self.quit()
 
-    def update_services_cmd(self, connection: BLEConnection):
-        services_dict: Dict[str, AbstractService] = {}
-        for srv in SERVICE_REGISTER.keys():
-            if srv in connection:
-                print("Service found: " + str(srv))
-                services_dict[srv.__name__] = connection[srv]
-        self.service_tabs.update_services(services_dict)
+
 
 
 def initialize_app_settings():

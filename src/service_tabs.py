@@ -1,8 +1,11 @@
 import customtkinter as ctk
+
+from src import SERVICE_REGISTER
 from src.utils import TRANSPARENT_COLOR, STD_PADDING
 from src.service_tabs_manager import ServiceTabsManager
 from typing import Dict
 from src.abstract_service import AbstractService
+from adafruit_ble import BLEConnection
 
 
 class ServicesBox(ctk.CTkFrame):
@@ -20,7 +23,6 @@ class ServicesBox(ctk.CTkFrame):
         service_select_label.grid(row=0, column=0, padx=STD_PADDING, sticky="w")
         self._service_options = ctk.CTkOptionMenu(master=select_frame, anchor="center", command=self.select_opt_cmd)
         self._service_options.set(value="")
-        self.update_services()
         self._service_options.grid(row=0, column=1, padx=STD_PADDING, sticky="w")
 
         uuid_label = ctk.CTkLabel(master=self, text="UUID:", anchor="w")
@@ -32,20 +34,30 @@ class ServicesBox(ctk.CTkFrame):
                                         fg_color=TRANSPARENT_COLOR, justify='center')
         self._uuid_entry.grid(padx=1, pady=1, sticky="nsew")
 
+        self.update_services()
+
     def update_services(self, services_dict: Dict[str, AbstractService] = None):
         if services_dict is None:
             services_dict = {}
-
         self._service_list = services_dict
         self._service_options.configure(values=self._service_list.keys())
 
-    def select_opt_cmd(self, selected_option: str):
-        if selected_option in self._service_list:
-            srv = self._service_list[selected_option]
-            self._update_entry(self._uuid_entry, srv.get_uuid().upper())
-            self._select_srv_cmd(srv)
+        if self._service_list:
+            default_value = list(self._service_list.keys())[0]
+            self._service_options.set(value=default_value)
+            self.select_opt_cmd(default_value)
+        else:
+            self._service_options.set(value="")
+            self._update_entry(self._uuid_entry)
 
-    def _update_entry(self, entry, text):
+    def select_opt_cmd(self, selected_option: str):
+        if selected_option in self._service_list.keys():
+            srv = self._service_list[selected_option]
+            self._select_srv_cmd(srv)
+            uuid = srv.get_uuid().upper()
+            self._update_entry(self._uuid_entry, uuid)
+
+    def _update_entry(self, entry, text=""):
         entry.configure(state="normal")
         entry.delete(0, ctk.END)
         entry.insert(0, text)
@@ -69,9 +81,6 @@ class ServiceTabs(ctk.CTkFrame):
         service_tab.pack(fill=ctk.BOTH, expand=True)
         self._service_tabs_manager = ServiceTabsManager(master=service_tab)
 
-    def update_services(self, services_dict: Dict[str, AbstractService] = None):
-        self._services_box.update_services(services_dict)
-
     def _select_service_cmd(self, service: AbstractService):
         if not isinstance(service, AbstractService):
             print("Error: Provided service is not an instance of AbstractService")
@@ -79,5 +88,14 @@ class ServiceTabs(ctk.CTkFrame):
         else:
             self._service_tabs_manager.select_service(service)
 
-    def quit_(self):
-        self._service_tabs_manager.quit()
+    def connect(self, connection: BLEConnection):
+        services_dict: Dict[str, AbstractService] = {}
+        for srv in SERVICE_REGISTER.keys():
+            if srv in connection:
+                print("Service found: " + str(srv))
+                services_dict[srv.__name__] = connection[srv]
+        self._services_box.update_services(services_dict)
+
+    def disconnect(self):
+        self._services_box.update_services()
+        self._service_tabs_manager.quit_()
