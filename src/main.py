@@ -1,9 +1,6 @@
 import customtkinter as ctk
-from adafruit_ble import BLEConnection
-from src import SERVICE_REGISTER, AbstractService
 from src.connection_tab import ConnectionTab
 from src.service_tabs import ServiceTabs
-from typing import Dict
 
 BASE_WINDOW_WIDTH = 2560
 BASE_WINDOW_HEIGHT = 1440
@@ -41,8 +38,6 @@ class BLEToolkitApp(ctk.CTk):
         self.service_tabs.disconnect()
         self.connection_tab.quit_()
         self.quit()
-
-
 
 
 def initialize_app_settings():
