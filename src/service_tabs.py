@@ -1,24 +1,40 @@
 import customtkinter as ctk
-
+from CTkMessagebox import CTkMessagebox
+from CTkToolTip import CTkToolTip
 from src import SERVICE_REGISTER
 from src.utils import TRANSPARENT_COLOR, STD_PADDING
 from src.service_tabs_manager import ServiceTabsManager
-from typing import Dict
 from src.abstract_service import AbstractService
-from adafruit_ble import BLEConnection
+from adafruit_ble import BLEConnection, Advertisement
+from typing import Dict
 
 
 class ServicesBox(ctk.CTkFrame):
     def __init__(self, master, select_service_cmd, **kwargs):
         super().__init__(master, **kwargs)
         self._select_srv_cmd = select_service_cmd
-        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
 
         self._service_list: Dict[str, AbstractService] = {}
+        self._current_advertisement: Advertisement = None
 
+        # Device frame
+        self.device_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
+        self.device_frame.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="w")
+        self.device_label = ctk.CTkLabel(master=self.device_frame, text="No Device Connected", anchor="w")
+        self.device_label.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="w")
+        self.info_button = ctk.CTkButton(master=self.device_frame, width=30, height=30, corner_radius=15,
+                                         text="i", state=ctk.DISABLED)
+        self.info_button.grid(row=0, column=1, padx=(STD_PADDING, 50), pady=STD_PADDING, sticky="e")
+
+        self.tooltip = CTkToolTip(self.info_button, message="No device information available",
+                                  justify="left", padding=(STD_PADDING, STD_PADDING))
+
+        # Select frame
         select_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
-        select_frame.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING)
+        select_frame.grid(row=0, column=1, padx=STD_PADDING, pady=STD_PADDING)
         service_select_label = ctk.CTkLabel(master=select_frame, text="Select Service", anchor="center")
         service_select_label.grid(row=0, column=0, padx=STD_PADDING, sticky="w")
         self._service_options = ctk.CTkOptionMenu(master=select_frame, anchor="center", command=self.select_opt_cmd)
@@ -26,21 +42,29 @@ class ServicesBox(ctk.CTkFrame):
         self._service_options.grid(row=0, column=1, padx=STD_PADDING, sticky="w")
 
         uuid_label = ctk.CTkLabel(master=self, text="UUID:", anchor="w")
-        uuid_label.grid(row=0, column=1, padx=(STD_PADDING * 2, 0), pady=STD_PADDING, sticky="w")
+        uuid_label.grid(row=0, column=2, padx=(STD_PADDING * 2, 0), pady=STD_PADDING, sticky="w")
 
         uuid_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
-        uuid_frame.grid(row=0, column=2, padx=STD_PADDING, pady=STD_PADDING)
+        uuid_frame.grid(row=0, column=3, padx=STD_PADDING, pady=STD_PADDING)
         self._uuid_entry = ctk.CTkEntry(master=uuid_frame, width=380, state="readonly",
                                         fg_color=TRANSPARENT_COLOR, justify='center')
         self._uuid_entry.grid(padx=1, pady=1, sticky="nsew")
 
         self.update_services()
 
-    def update_services(self, services_dict: Dict[str, AbstractService] = None):
+    def update_services(self, advert: Advertisement = None, services_dict: Dict[str, AbstractService] = None):
         if services_dict is None:
             services_dict = {}
         self._service_list = services_dict
         self._service_options.configure(values=self._service_list.keys())
+
+        if advert:
+            self._current_advertisement = advert
+            self.device_label.configure(text=advert.address.string)
+            self._update_tooltip(advert)
+        else:
+            self.device_label.configure(text="No Device Connected")
+            self._update_tooltip()
 
         if self._service_list:
             default_value = list(self._service_list.keys())[0]
@@ -63,6 +87,19 @@ class ServicesBox(ctk.CTkFrame):
         entry.insert(0, text)
         entry.configure(state="readonly")
 
+    def _update_tooltip(self, advert: Advertisement = None):
+        if advert:
+            message = (  # TODO : continuous update
+                f"RSSI: {advert.rssi}\n"
+                f"Tx Power: {advert.tx_power if advert.tx_power is not None else 'N/A'}\n"
+                f"Complete Name: {advert.complete_name or ''}\n"
+                f"Short Name: {advert.short_name or ''}"
+            )
+        else:
+            message = "No device information available"
+
+        self.tooltip.configure(message=message)
+
 
 class ServiceTabs(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -83,18 +120,19 @@ class ServiceTabs(ctk.CTkFrame):
 
     def _select_service_cmd(self, service: AbstractService):
         if not isinstance(service, AbstractService):
-            print("Error: Provided service is not an instance of AbstractService")
-            # TODO: Add popup message
+            err_msg = "Error: Provided service is not an instance of AbstractService"
+            print(err_msg)
+            CTkMessagebox(title="Error", message=err_msg, icon="cancel")
         else:
             self._service_tabs_manager.select_service(service)
 
-    def connect(self, connection: BLEConnection):
+    def connect(self, advert: Advertisement, connection: BLEConnection):
         services_dict: Dict[str, AbstractService] = {}
         for srv in SERVICE_REGISTER.keys():
             if srv in connection:
                 print("Service found: " + str(srv))
                 services_dict[srv.__name__] = connection[srv]
-        self._services_box.update_services(services_dict)
+        self._services_box.update_services(advert, services_dict)
 
     def disconnect(self):
         self._services_box.update_services()
