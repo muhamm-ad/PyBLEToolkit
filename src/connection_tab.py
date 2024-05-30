@@ -1,9 +1,10 @@
 import customtkinter as ctk
 from CTkListbox import CTkListbox
 from adafruit_ble.advertising.standard import Advertisement
-from src.utils import TRANSPARENT_COLOR, STD_PADDING, MessageLabel
+from src.utils import TRANSPARENT_COLOR, STD_PADDING, MessageLabel, InfoFrame
 from adafruit_ble import BLERadio, BLEConnection
 from collections import defaultdict
+from bleak.exc import BleakDBusError
 import threading
 import time
 
@@ -99,7 +100,7 @@ class ConnectionTab(ctk.CTkFrame):
         self._selected_advert: Advertisement = None
 
         scanning_frame = self._create_scanning_frame()
-        connecting_frame = self._create_connecting_frame()  # TODO : use generic function
+        connecting_frame = self._create_connecting_frame()
         self._progressbar = ctk.CTkProgressBar(master=self, mode="indeterminate", determinate_speed=1)
         self._message_label = MessageLabel(master=self, text="", anchor="center")
         self._devices_box: DevicesBox = DevicesBox(master=self, justify="center", label_text="Discovered Devices",
@@ -142,26 +143,10 @@ class ConnectionTab(ctk.CTkFrame):
         self._scan_button.configure(state=ctk.NORMAL)
         self._stop_button.configure(state=ctk.DISABLED)
 
-    def _create_label_entry(self, frame, row, text, entry_width=300, state="readonly"):
-        label = ctk.CTkLabel(master=frame, text=text, anchor="w")
-        label.grid(row=row, column=0, sticky="w")
-        entry = ctk.CTkEntry(master=frame, width=entry_width, state=state, justify='center', fg_color=TRANSPARENT_COLOR)
-        entry.grid(row=row, column=2, padx=(STD_PADDING, 0), pady=STD_PADDING, sticky="nsew")
-        return entry
-
     def _create_connecting_frame(self):
         connect_frame = ctk.CTkFrame(master=self, fg_color=TRANSPARENT_COLOR)
 
-        info_frame = ctk.CTkFrame(master=connect_frame, fg_color=TRANSPARENT_COLOR)
-        info_frame.grid_columnconfigure(0, weight=0)
-        info_frame.grid_columnconfigure(1, weight=2)
-        info_frame.rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
-        self._address_entry = self._create_label_entry(info_frame, 0, "Address")
-        self._connectable_entry = self._create_label_entry(info_frame, 1, "Connectable")
-        self._rssi_entry = self._create_label_entry(info_frame, 2, "RSSI")
-        self._tx_power_entry = self._create_label_entry(info_frame, 3, "Tx Power")
-        self._complete_name_entry = self._create_label_entry(info_frame, 4, "Name")
-        self._short_name_entry = self._create_label_entry(info_frame, 5, "Short Name")
+        self._info_frame = InfoFrame(master=connect_frame, fg_color=TRANSPARENT_COLOR)
 
         buttons_frame = ctk.CTkFrame(master=connect_frame, fg_color=TRANSPARENT_COLOR)
         buttons_frame.grid_columnconfigure(0, weight=1)
@@ -174,7 +159,7 @@ class ConnectionTab(ctk.CTkFrame):
         self._connect_button.grid(column=0, row=0, padx=10, pady=10, sticky="ew")
         self._disconnect_button.grid(column=1, row=0, padx=10, pady=10, sticky="ew")
 
-        info_frame.pack()
+        self._info_frame.pack()
         buttons_frame.pack()
 
         return connect_frame
@@ -182,7 +167,6 @@ class ConnectionTab(ctk.CTkFrame):
     def _connect_cmd(self):
         self._stop_scanning_cmd()
         self._connect_button.configure(state=ctk.DISABLED)
-        self._disconnect_button.configure(state=ctk.NORMAL)
 
         if self._devices_box.clear_selection_after_delay is not None:
             self._devices_box.after_cancel(self._devices_box.clear_selection_after_delay)
@@ -192,31 +176,65 @@ class ConnectionTab(ctk.CTkFrame):
             if BLE.connected:
                 self._disconnect_current_connection()
 
-            address = self._selected_advert.address.string
-
             self._message_label.update_message(message="Connecting ...", color="white")
-            # print(f"Connecting to {address}...")
 
-            self._current_connection = BLE.connect(self._selected_advert, timeout=3)
-            if self._current_connection and self._current_connection.connected:
-                self._message_label.update_message(message=f"Connected to {address}", color="green")
-                # print("Connected")
-                self._srv_connect_cmd(self._current_connection)
+            if self._handle_connection():
+                self._message_label.update_message(message=f"Connected", color="green")
+                self._srv_connect_cmd(self._selected_advert, self._current_connection)
+                self._disconnect_button.configure(state=ctk.NORMAL)
             else:
-                self._message_label.update_message(message="Not Connected", color="red", timeout=MESSAGE_TIMEOUT)
-                # print(f"{address} not Connected")
+                # self._message_label.update_message(message="Not Connected", color="red", timeout=MESSAGE_TIMEOUT)
+                self._disconnect_button.configure(state=ctk.DISABLED)
+                self._release_selected_device()
         else:
             self._message_label.update_message(message="Not connectable", color="red", timeout=MESSAGE_TIMEOUT)
-            # print(f"{address} not connectable.")
+            self._disconnect_button.configure(state=ctk.DISABLED)
+            self._release_selected_device()
+
+    def _handle_connection(self):
+        def handle_error(err):
+            print(f"Connection failed due to unexpected error: {err}")
+            self._message_label.update_message(message="Connection failed", color="red",
+                                               timeout=MESSAGE_TIMEOUT, clear_after=True)
+            return False
+
+        try:
+            self._current_connection = BLE.connect(self._selected_advert, timeout=3)
+        except BleakDBusError as e:
+            if "org.bluez.Error.InProgress" in str(e):
+                time.sleep(0.5)  # Wait before retrying
+                try:
+                    self._current_connection = BLE.connect(self._selected_advert, timeout=3)
+                except Exception as e:
+                    return handle_error(e)
+            else:
+                return handle_error(e)
+        except Exception as e:
+            return handle_error(e)
+
+        return self._current_connection and self._current_connection.connected
 
     def _disconnect_cmd(self):
         self._message_label.update_message(message="Disconnecting ...", color="white")
         self._disconnect_button.configure(state=ctk.DISABLED)
-        self._srv_disconnect_cmd()
-        self._disconnect_current_connection()
-        self._connect_button.configure(state=ctk.NORMAL)
-        self._message_label.update_message(message="Disconnected", color="white",
-                                           timeout=MESSAGE_TIMEOUT, clear_after=True)
+
+        if self._handle_disconnection():
+            self._message_label.update_message(message="Disconnected", color="white", timeout=MESSAGE_TIMEOUT)
+            self._srv_disconnect_cmd()
+            self._connect_button.configure(state=ctk.NORMAL)
+        else:
+            self._message_label.update_message(message="Disconnection failed", color="red", timeout=MESSAGE_TIMEOUT)
+
+    def _handle_disconnection(self):
+        try:
+            self._disconnect_current_connection()
+        except Exception as e:
+            print(f"Disconnection failed due to unexpected error: {e}")
+            self._message_label.update_message(message="Disconnection failed", color="red",
+                                               timeout=MESSAGE_TIMEOUT, clear_after=True)
+            return False
+
+        return self._current_connection is None or not self._current_connection.connected
 
     def _scan_for_devices_background(self):
         while True:
@@ -272,48 +290,23 @@ class ConnectionTab(ctk.CTkFrame):
     def _disconnect_current_connection(self):
         if self._current_connection is not None:
             self._current_connection.disconnect()
+            self._current_connection = None
 
     def _select_device_cmd(self, selected_device: str):
         address = selected_device.split("(")[0]
         self._selected_advert = self._devices[address.strip()]['advertisements']
         self._update_connection_button()
-        self._update_device_info_entries()
+        self._info_frame.update_entries(self._selected_advert)
 
     def _update_connection_button(self):
-        if self._selected_advert is None:
-            self._connect_button.configure(state="disabled")
+        if self._selected_advert and self._selected_advert.connectable:
+            self._connect_button.configure(state=ctk.NORMAL)
         else:
-            self._connect_button.configure(state="normal")
+            self._connect_button.configure(state=ctk.DISABLED)
 
-    def _update_device_info_entries(self):
-        if self._selected_advert:
-            self._address_entry.configure(state=ctk.NORMAL)
-            self._address_entry.delete(0, ctk.END)
-            self._address_entry.insert(0, self._selected_advert.address.string)
-            self._address_entry.configure(state=ctk.DISABLED)
-
-            self._connectable_entry.configure(state=ctk.NORMAL)
-            self._connectable_entry.delete(0, ctk.END)
-            self._connectable_entry.insert(0, str(self._selected_advert.connectable))
-            self._connectable_entry.configure(state=ctk.DISABLED)
-
-            self._rssi_entry.configure(state=ctk.NORMAL)
-            self._rssi_entry.delete(0, ctk.END)
-            self._rssi_entry.insert(0, str(self._selected_advert.rssi))
-            self._rssi_entry.configure(state=ctk.DISABLED)
-
-            self._tx_power_entry.configure(state=ctk.NORMAL)
-            self._tx_power_entry.delete(0, ctk.END)
-            tx_power_value = self._selected_advert.tx_power
-            self._tx_power_entry.insert(0, str(tx_power_value if tx_power_value is not None else "N/A"))
-            self._tx_power_entry.configure(state=ctk.DISABLED)
-
-            self._complete_name_entry.configure(state=ctk.NORMAL)
-            self._complete_name_entry.delete(0, ctk.END)
-            self._complete_name_entry.insert(0, self._selected_advert.complete_name or "")
-            self._complete_name_entry.configure(state=ctk.DISABLED)
-
-            self._short_name_entry.configure(state=ctk.NORMAL)
-            self._short_name_entry.delete(0, ctk.END)
-            self._short_name_entry.insert(0, self._selected_advert.short_name or "")
-            self._short_name_entry.configure(state=ctk.DISABLED)
+    def _release_selected_device(self):
+        self._selected_advert = None
+        self._devices_box.clear_selection()
+        self._info_frame.clear_entries()
+        self._connect_button.configure(state=ctk.DISABLED)
+        self._disconnect_button.configure(state=ctk.DISABLED)
