@@ -219,19 +219,21 @@ class ConnectionTab(ctk.CTkFrame):
         self._disconnect_button.configure(state=ctk.DISABLED)
 
         if self._handle_disconnection():
-            self._message_label.update_message(message="Disconnected", color="white", timeout=MESSAGE_TIMEOUT)
-            self._srv_disconnect_cmd()
+            self._message_label.update_message(message="Disconnected", color="white",
+                                               timeout=MESSAGE_TIMEOUT * 2, clear_after=True)
             self._connect_button.configure(state=ctk.NORMAL)
         else:
             self._message_label.update_message(message="Disconnection failed", color="red", timeout=MESSAGE_TIMEOUT)
 
     def _handle_disconnection(self):
         try:
+            self._srv_disconnect_cmd()
             self._disconnect_current_connection()
         except Exception as e:
             print(f"Disconnection failed due to unexpected error: {e}")
             self._message_label.update_message(message="Disconnection failed", color="red",
                                                timeout=MESSAGE_TIMEOUT, clear_after=True)
+            raise e
             return False
 
         return self._current_connection is None or not self._current_connection.connected
@@ -243,7 +245,8 @@ class ConnectionTab(ctk.CTkFrame):
                 self.after(0, self._update_devices_list)
             except Exception as e:
                 print(f"Error during continuous scan: {e}")
-                self._message_label.update_message(message="Error during scan", color="red", timeout=MESSAGE_TIMEOUT)
+                self._message_label.update_message(message="Error during scan", color="red",
+                                                   timeout=MESSAGE_TIMEOUT * 2, clear_after=True)
                 raise  # FIXME
             finally:
                 BLE.stop_scan()

@@ -17,7 +17,7 @@ class ServicesBox(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self._service_list: Dict[str, AbstractService] = {}
+        self._service_dict: Dict[str, AbstractService] = {}
         self._current_advertisement: Advertisement = None
 
         # Device frame
@@ -25,7 +25,7 @@ class ServicesBox(ctk.CTkFrame):
         self.device_frame.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="w")
         self.device_label = ctk.CTkLabel(master=self.device_frame, text="No Device Connected", anchor="w")
         self.device_label.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="w")
-        self.info_button = ctk.CTkButton(master=self.device_frame, width=30, height=30, corner_radius=15,
+        self.info_button = ctk.CTkButton(master=self.device_frame, width=20, height=20,
                                          text="i", state=ctk.DISABLED)
         self.info_button.grid(row=0, column=1, padx=(STD_PADDING, 50), pady=STD_PADDING, sticky="e")
 
@@ -55,8 +55,8 @@ class ServicesBox(ctk.CTkFrame):
     def update_services(self, advert: Advertisement = None, services_dict: Dict[str, AbstractService] = None):
         if services_dict is None:
             services_dict = {}
-        self._service_list = services_dict
-        self._service_options.configure(values=self._service_list.keys())
+        self._service_dict = services_dict
+        self._service_options.configure(values=list(self._service_dict.keys()))
 
         if advert:
             self._current_advertisement = advert
@@ -66,8 +66,8 @@ class ServicesBox(ctk.CTkFrame):
             self.device_label.configure(text="No Device Connected")
             self._update_tooltip()
 
-        if self._service_list:
-            default_value = list(self._service_list.keys())[0]
+        if self._service_dict:
+            default_value = list(self._service_dict.keys())[0]
             self._service_options.set(value=default_value)
             self.select_opt_cmd(default_value)
         else:
@@ -75,8 +75,8 @@ class ServicesBox(ctk.CTkFrame):
             self._update_entry(self._uuid_entry)
 
     def select_opt_cmd(self, selected_option: str):
-        if selected_option in self._service_list.keys():
-            srv = self._service_list[selected_option]
+        if selected_option in self._service_dict.keys():
+            srv = self._service_dict[selected_option]
             self._select_srv_cmd(srv)
             uuid = srv.get_uuid().upper()
             self._update_entry(self._uuid_entry, uuid)
@@ -136,4 +136,4 @@ class ServiceTabs(ctk.CTkFrame):
 
     def disconnect(self):
         self._services_box.update_services()
-        self._service_tabs_manager.quit_()
+        self._service_tabs_manager.disconnect()
