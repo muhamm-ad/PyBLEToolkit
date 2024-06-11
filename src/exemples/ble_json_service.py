@@ -5,7 +5,7 @@ from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from src.exemples.CustomFigureCanvasTkAgg import CustomFigureCanvasTkAgg
 from io import BytesIO
 from cairosvg import svg2png
 from PIL import Image
@@ -14,6 +14,7 @@ import pygal
 from pygal.style import Style
 import json
 import re
+
 
 MAX_DATA_POINTS = 30
 SOUND_MAX = 100
@@ -39,14 +40,14 @@ class ExJSONServiceTab(AbstractServiceTab):
         super().__init__(master, **kwargs)
 
         self._fig = Figure(dpi=100)
-        self._fig.set_tight_layout(True)  # Reduce padding and adjust layout
+        self._fig.set_constrained_layout(True)  # Reduce padding and adjust layout
 
         self._initialize_data_storage()
         self._setup_subplots()
         self._setup_axes()
 
         # Add the canvas to Tkinter
-        self._canvas = FigureCanvasTkAgg(self._fig, master=self)
+        self._canvas = CustomFigureCanvasTkAgg(self._fig, master=self)
         self._canvas.draw()
         self._canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
         self._update_plot()

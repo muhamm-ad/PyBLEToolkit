@@ -3,7 +3,7 @@ from src.utils import STD_PADDING
 from adafruit_ble.services.nordic import UARTService as NordicUARTService
 from src.abstract_service_tab import AbstractServiceTab
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from src.exemples.CustomFigureCanvasTkAgg import CustomFigureCanvasTkAgg
 import customtkinter as ctk
 import re
 
@@ -29,7 +29,7 @@ class UARTPlotterTab(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
 
         # Create a canvas
-        self._canvas = FigureCanvasTkAgg(self._fig, master=self)
+        self._canvas = CustomFigureCanvasTkAgg(self._fig, master=self)
         self._canvas.draw()
         self._canvas.get_tk_widget().grid(row=0, column=0, columnspan=4, sticky="nsew")
 
