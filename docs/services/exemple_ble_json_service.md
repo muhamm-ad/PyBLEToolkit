@@ -6,7 +6,7 @@ This document provides an example implementation of a JSON-based BLE service and
 
 Below is an example of what the graphical visualization looks like:
 
-![ExJSONService Visualization](exemple_ble_json.png)
+![ExJSONService Visualization](json_service_exemple.png)
 
 The `ExJSONService` example includes:
 - A BLE service (`ExJSONService`) that provides sensor data in JSON format.

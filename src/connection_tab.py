@@ -246,7 +246,7 @@ class ConnectionTab(ctk.CTkFrame):
             except Exception as e:
                 print(f"Error during continuous scan: {e}")
                 self._message_label.update_message(message="Error during scan", color="red",
-                                                   timeout=MESSAGE_TIMEOUT * 2, clear_after=True)
+                                                   timeout=MESSAGE_TIMEOUT, clear_after=True)
                 raise  # FIXME
             finally:
                 BLE.stop_scan()

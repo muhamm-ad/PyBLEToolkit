@@ -56,3 +56,54 @@ SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
 ## Authors
 
 - [muhamm-ad · GitHub](https://github.com/muhamm-ad)
+
+### Testing
+
+This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending temperature data with the following code:
+
+```python
+from adafruit_bmp280 import Adafruit_BMP280_I2C
+from adafruit_ble import BLERadio
+from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
+
+# Note: use the same service implemented in GUI (AbstractService and UARTService)
+from src.services import UARTService
+
+import board
+import time
+
+ble = BLERadio()
+ble.stop_advertising()  # stop any persistent old advertisement
+
+uart_service = UARTService()
+uart_advertisement = ProvideServicesAdvertisement(uart_service)
+ble.start_advertising(uart_advertisement)
+
+i2c = board.I2C()  # uses board.SCL and board.SDA
+bmp280 = Adafruit_BMP280_I2C(i2c)
+# Set this to sea level pressure in hectoPascals at your location for accurate altitude reading.
+bmp280.sea_level_pressure = 1013.25
+
+last_connection_time = time.time()
+
+# Main loop for generating and processing data
+while True:
+    if ble.connected:
+        last_connection_time = time.time()
+        uart_service.write((f"{bmp280.temperature: .1f}" + '\n').encode())
+    else:
+        elapsed_time = time.time() - last_connection_time
+        if elapsed_time > 1:
+            ble.stop_advertising()
+            # print("Device disconnected for more than 1 seconds. Stopping advertisement.")
+            time.sleep(0.5)
+
+            # Wait for a new connection
+            ble.start_advertising(uart_advertisement)
+            while not ble.connected:
+                time.sleep(0.5)
+            # print("Device reconnected. Resuming data transmission.")
+            last_connection_time = time.time()
+
+    time.sleep(0.5)
+```

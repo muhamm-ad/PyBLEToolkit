@@ -8,7 +8,7 @@ We love your input! We want to make contributing to this project as easy and tra
 - Proposing new features
 - Proposing new GUI service
   - **Develop Your Service**: Create a new service class that inherits from `AbstractService` and a corresponding GUI class that inherits from `AbstractServiceTab`.
-  - **Document the Protocol**: Clearly document the data transmission protocol used by your service. Include examples of the data format and how it should be interpreted. see  [ExJSONService](services/exemple_ble_json.png) for example.
+  - **Document the Protocol**: Clearly document the data transmission protocol used by your service. Include examples of the data format and how it should be interpreted. see  [ExJSONService](services/json_service_exemple.png) for example.
   - **Submit a Pull Request**: Fork the repository, add your service and GUI classes, update the `SERVICE_REGISTER` dictionary, and submit a pull request with your changes.
 
 ### How to Contribute Your Service
