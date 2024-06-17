@@ -40,7 +40,8 @@ class ExJSONServiceTab(AbstractServiceTab):
         super().__init__(master, **kwargs)
 
         self._fig = Figure(dpi=100)
-        self._fig.set_constrained_layout(True)  # Reduce padding and adjust layout
+        # self._fig.set_constrained_layout(True)  # Reduce padding and adjust layout
+        self._fig.set_tight_layout(True)  # Reduce padding and adjust layout
 
         self._initialize_data_storage()
         self._setup_subplots()
