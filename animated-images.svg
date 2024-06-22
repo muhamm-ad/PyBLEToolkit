@@ -1,0 +1,32 @@
+<svg fill="none" viewBox="0 0 500 300" width="500" height="300" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        @keyframes slideshow {
+        0%, 25% { transform: translateX(0); }
+        30%, 55% { transform: translateX(-100%); }
+        60%, 85% { transform: translateX(-200%); }
+        90%, 100% { transform: translateX(-300%); }
+        }
+
+        .scroll-container {
+        display: flex;
+        animation: slideshow 7s infinite;
+        }
+
+        .scroll-container img {
+        width: 500px;
+        height: 300px;
+        flex: 1 0 100%;
+        }
+    </style>
+
+    <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <div class="scroll-container">
+                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/json_service_exemple.png?raw=true"/>
+                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/uart_service_example_plotter.png?raw=true"/>
+                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/uart_service_example_terminal.png?raw=true"/>
+                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/json_service_exemple.png?raw=true"/>
+            </div>
+        </div>
+    </foreignObject>
+</svg>

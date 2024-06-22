@@ -2,6 +2,8 @@
 
 PyBLEToolkit is a Python toolkit designed to provide a streamlined environment for Bluetooth Low Energy (BLE) services using customtkinter. This toolkit simplifies the development of custom BLE service interfaces, enabling developers to focus on functionality and data handling while easily integrating with a GUI framework.
 
+<img src="animated-images.svg" title="" alt="Animated Images" data-align="center">
+
 ## Features
 
 - **Easy GUI Integration**: Quickly add custom frames to display and interact with BLE services.
