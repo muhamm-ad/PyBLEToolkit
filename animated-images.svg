@@ -22,10 +22,10 @@
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <div class="scroll-container">
-                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/json_service_exemple.png?raw=true"/>
-                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/uart_service_example_plotter.png?raw=true"/>
-                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/uart_service_example_terminal.png?raw=true"/>
-                <img src="https://github.com/muhamm-ad/PyBLEToolkit/blob/master/docs/services/json_service_exemple.png?raw=true"/>
+                <img src="docs/services/json_service_exemple.png"/>
+                <img src="docs/services/uart_service_example_plotter.png"/>
+                <img src="docs/services/uart_service_example_terminal.png"/>
+                <img src="docs/services/json_service_exemple.png"/>
             </div>
         </div>
     </foreignObject>
