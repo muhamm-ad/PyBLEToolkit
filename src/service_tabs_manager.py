@@ -69,3 +69,4 @@ class ServiceTabsManager:
             self._current_service_tab.grid(row=0, column=0, padx=STD_PADDING, pady=STD_PADDING, sticky="nsew")
             self._current_service = None
             self._service_threads = {}
+            self._running = True

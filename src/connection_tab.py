@@ -217,9 +217,11 @@ class ConnectionTab(ctk.CTkFrame):
         if self._handle_disconnection():
             self._message_label.update_message(message="Disconnected", color="white",
                                                timeout=MESSAGE_TIMEOUT * 2, clear_after=True)
+            self._release_selected_device()
             self._start_scanning_cmd()
         else:
-            self._message_label.update_message(message="Disconnection failed", color="red", timeout=MESSAGE_TIMEOUT)
+            self._message_label.update_message(message="Disconnection failed", color="red",
+                                               timeout=MESSAGE_TIMEOUT, clear_after=True)
 
     def _handle_disconnection(self):
         try:
@@ -229,8 +231,6 @@ class ConnectionTab(ctk.CTkFrame):
             self._current_connection = None
         except Exception as e:
             print(f"Disconnection failed due to unexpected error: {e}")
-            self._message_label.update_message(message="Disconnection failed", color="red",
-                                               timeout=MESSAGE_TIMEOUT, clear_after=True)
             raise e
 
         return self._current_connection is None or not self._current_connection.connected
