@@ -77,7 +77,6 @@ ble.stop_advertising()  # stop any persistent old advertisement
 
 uart_service = UARTService()
 uart_advertisement = ProvideServicesAdvertisement(uart_service)
-ble.start_advertising(uart_advertisement)
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
 bmp280 = Adafruit_BMP280_I2C(i2c)

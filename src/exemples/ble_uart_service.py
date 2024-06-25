@@ -7,7 +7,7 @@ from src.exemples.CustomFigureCanvasTkAgg import CustomFigureCanvasTkAgg
 import customtkinter as ctk
 import re
 
-MAX_DATA_POINTS = 1000 # TODO : add to doc
+MAX_DATA_POINTS = 1000  # TODO: add to doc
 TRANSPARENT_COLOR = "transparent"
 
 
@@ -70,7 +70,7 @@ class UARTPlotterTab(ctk.CTkFrame):
         self.scale_frame.grid(row=2, column=0, columnspan=5, sticky="nsew")
 
     def _setup_axis(self):
-        self._ax.set_xlabel('Time')
+        # self._ax.set_xlabel('Num')
         self._ax.set_ylabel('Values')
         self._ax.grid(True)
 
@@ -109,11 +109,16 @@ class UARTPlotterTab(ctk.CTkFrame):
                 min_x = max(0, self._xs[-1] - x_range) if len(self._xs) > x_range else 0
                 max_x = self._xs[-1] + 1 if len(self._xs) > x_range else x_range
 
+                # Adjust y-axis range based on the data
+                min_y = (min(self._ys) if self._ys else 0) - 1
+                max_y = (max(self._ys) if self._ys else 1) + 1
+
                 # Efficiently update the plot
                 self._ax.clear()
                 self._setup_axis()
                 self._ax.plot(self._xs, self._ys, color='red')
                 self._ax.set_xlim(left=min_x, right=max_x)
+                self._ax.set_ylim(bottom=min_y, top=max_y)
                 self._canvas.draw()
 
 

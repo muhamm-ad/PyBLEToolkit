@@ -117,8 +117,6 @@ import array
 import time
 import json
 
-
-
 ble = BLERadio()
 ble.stop_advertising()  # stop any persistent old advertisement
 
@@ -213,5 +211,5 @@ while True:
             # print("Device reconnected. Resuming data transmission.")
             last_connection_time = time.time()
 
-    time.sleep(0.5)
+    time.sleep(1)
 ```
