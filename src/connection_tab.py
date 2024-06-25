@@ -19,7 +19,6 @@ class DevicesBox(CTkListbox):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.selected = None
-        self.clear_selection_after_delay = None
 
     def add_item(self, display_text):
         self.insert("end", display_text)
@@ -31,8 +30,9 @@ class DevicesBox(CTkListbox):
                 return
 
     def clear(self):
-        self.delete(0, "end")
-        self.selected = None
+        self.clear_selection()
+        while self.size() > 0:
+            self.delete(0)
 
     def sort_items(self, reverse=False):
         items = [self.get(i) for i in range(self.size())]
@@ -168,18 +168,14 @@ class ConnectionTab(ctk.CTkFrame):
         self._stop_scanning_cmd()
         self._connect_button.configure(state=ctk.DISABLED)
 
-        if self._devices_box.clear_selection_after_delay is not None:
-            self._devices_box.after_cancel(self._devices_box.clear_selection_after_delay)
-            self._devices_box.clear_selection_after_delay = None
-
         if self._selected_advert.connectable:
             if BLE.connected:
-                self._disconnect_current_connection()
+                self._disconnect_cmd()
 
             self._message_label.update_message(message="Connecting ...", color="white")
 
             if self._handle_connection():
-                self._message_label.update_message(message=f"Connected", color="green")
+                self._message_label.update_message(message="Connected", color="green")
                 self._srv_connect_cmd(self._selected_advert, self._current_connection)
                 self._disconnect_button.configure(state=ctk.NORMAL)
             else:
@@ -221,20 +217,21 @@ class ConnectionTab(ctk.CTkFrame):
         if self._handle_disconnection():
             self._message_label.update_message(message="Disconnected", color="white",
                                                timeout=MESSAGE_TIMEOUT * 2, clear_after=True)
-            self._connect_button.configure(state=ctk.NORMAL)
+            self._start_scanning_cmd()
         else:
             self._message_label.update_message(message="Disconnection failed", color="red", timeout=MESSAGE_TIMEOUT)
 
     def _handle_disconnection(self):
         try:
             self._srv_disconnect_cmd()
-            self._disconnect_current_connection()
+            if self._current_connection is not None:
+                self._current_connection.disconnect()
+            self._current_connection = None
         except Exception as e:
             print(f"Disconnection failed due to unexpected error: {e}")
             self._message_label.update_message(message="Disconnection failed", color="red",
                                                timeout=MESSAGE_TIMEOUT, clear_after=True)
             raise e
-            return False
 
         return self._current_connection is None or not self._current_connection.connected
 
@@ -247,7 +244,6 @@ class ConnectionTab(ctk.CTkFrame):
                 print(f"Error during continuous scan: {e}")
                 self._message_label.update_message(message="Error during scan", color="red",
                                                    timeout=MESSAGE_TIMEOUT, clear_after=True)
-                raise  # FIXME
             finally:
                 BLE.stop_scan()
                 if not self._scanning:
@@ -288,12 +284,7 @@ class ConnectionTab(ctk.CTkFrame):
 
     def quit_(self):
         self._stop_scanning_cmd()
-        self._disconnect_current_connection()
-
-    def _disconnect_current_connection(self):
-        if self._current_connection is not None:
-            self._current_connection.disconnect()
-            self._current_connection = None
+        self._disconnect_cmd()
 
     def _select_device_cmd(self, selected_device: str):
         address = selected_device.split("(")[0]
