@@ -15,15 +15,15 @@ PyBLEToolkit is a Python toolkit designed to provide a streamlined environment f
 Before you begin, ensure you have the following installed:
 - Python 3.6 or newer
 - pip (Python package installer)
-- Check `requirements.txt` for necessary python packages
+- Check [requirements.txt](requirements.txt) for necessary python packages
 
 ## Usage
 
 After installation, you can start by creating a new BLE service frame. Here are the steps to integrate a new service into the toolkit:
 
-1. Create two objects: one for the service itself that inherits from `AbstractService` in [service.py](src/abstract_service.py), and another for the GUI of your service that inherits from `AbstractServiceTab` in [service_tab.py](src/abstract_service_tab.py). See [examples](docs/services) for reference.
+1. Create two objects: one for the service itself that inherits from [AbstractService](src/abstract_service.py), and another for the GUI of your service that inherits from [AbstractServiceTab](src/abstract_service_tab.py). See [examples](docs/services).
 
-2. Register your service and GUI in the dictionary [SERVICE_REGISTER](src/__init__.py) like this:
+2. Register your service and GUI in the dictionary [SERVICE_REGISTER](src/service_register.py) like this:
 
 ```python
 # Service register mapping services to their corresponding tab classes
@@ -39,7 +39,7 @@ Once registered, you can run the application and connect to your service.
 
 We welcome contributions to PyBLEToolkit! To make this project more interesting and useful, we encourage developers to contribute their services with pre-prepared GUIs for various applications. Please document the protocol for data transmission.
 
-If you have suggestions for improvements or new features, feel free to submit a pull request. Check out our `CONTRIBUTING.md` for guidelines on how to contribute.
+If you have suggestions for improvements or new features, feel free to submit a pull request. Check out our [CONTRIBUTING](docs/CONTRIBUTING.md) for guidelines on how to contribute.
 
 ## License
 

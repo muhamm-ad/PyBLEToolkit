@@ -4,21 +4,21 @@ This document provides an example implementation of a JSON-based BLE service and
 
 ## Overview
 
-Below is an example of what the graphical visualization looks like:
+An example of what the graphical visualization looks like:
 
 ![ExJSONService Visualization](json_service_exemple.png)
 
-The `ExJSONService` example includes:
+The [ExJSONService](../../src/exemples/ble_json_service.py) example includes:
 - A BLE service (`ExJSONService`) that provides sensor data in JSON format.
 - A GUI tab (`ExJSONServiceTab`) to visualize the sensor data using matplotlib and pygal.
 
 ## Service Implementation
 
-The `ExJSONService` class inherits from `AbstractService` and defines the BLE characteristics for the sensor data. See [ExJSONService](../../src/exemples/ble_json_service.py).
+The `ExJSONService` class inherits from [AbstractService](src/abstract_service.py) and defines the BLE characteristics for the sensor data.
 
 ## GUI Implementation
 
-The `ExJSONServiceTab` class inherits from `AbstractServiceTab` and provides a visual representation of the sensor data using matplotlib and pygal. See [ExJSONServiceTab](../../src/exemples/ble_json_service.py).
+The `ExJSONServiceTab` class inherits from [AbstractServiceTab](src/abstract_service_tab.py) and provides a visual representation of the sensor data using matplotlib and pygal.
 
 ## Protocol
 
@@ -76,8 +76,8 @@ The `ExJSONService` class provides sensor data in JSON format, structured as fol
 To use the `ExJSONService` and `ExJSONServiceTab`, register them in the `SERVICE_REGISTER` dictionary as follows:
 
 ```python
-# In src/__init__.py
-from src.examples.ble_json_service import ExJSONService, ExJSONServiceTab
+# In src/service_register.py
+# ...
 
 SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
     ExJSONService: ExJSONServiceTab,
@@ -86,14 +86,6 @@ SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
 ```
 
 Once registered, you can run the application and connect to the ExJSONService to visualize the sensor data.
-
-## Authors
-
-- [muhamm-ad · GitHub](https://github.com/muhamm-ad)
-
-## Acknowledgments
-
-The UUIDs used in this example are for demonstration purposes only.
 
 ### Testing
 
@@ -108,7 +100,7 @@ from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
 
 # Note: use the same service implemented in GUI (AbstractService and ExJSONService)
-from src.services import ExJSONService
+from utils import ExJSONService
 
 import audiobusio
 import board
@@ -213,3 +205,11 @@ while True:
 
     time.sleep(1)
 ```
+
+## Authors
+
+- [muhamm-ad · GitHub](https://github.com/muhamm-ad)
+
+## Acknowledgments
+
+The UUIDs used in this example are for demonstration purposes only.

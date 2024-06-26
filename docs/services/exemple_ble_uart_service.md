@@ -11,21 +11,21 @@ Below is an example of what the graphical visualization looks like:
     <img src="uart_service_example_plotter.png" alt="Plotter" width="45%" />
 </div>
 
-The `UARTService` example includes:
+The [UARTService](../../src/exemples/ble_uart_service.py) example includes:
 - A BLE service (`UARTService`) that communicates via UART.
 - A GUI tab (`UARTServiceTab`) to visualize the UART data using matplotlib and a terminal interface.
 
 ## Service Implementation
 
-The `UARTService` class inherits from `NordicUARTService` and `AbstractService` to define the BLE characteristics for UART communication. See [UARTService](../../src/exemples/ble_uart_service.py).
+The `UARTService` class inherits from `NordicUARTService` and [AbstractService](src/abstract_service.py) to define the BLE characteristics for UART communication.
 
 ## GUI Implementation
 
-The `UARTServiceTab` class inherits from `AbstractServiceTab` and provides a visual representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface. See [UARTServiceTab](../../src/services/uart_service.py).
+The `UARTServiceTab` class inherits from [AbstractServiceTab](src/abstract_service_tab.py) and provides a visual representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface.
 
 It is composed of two tab views:
-- **Plotter**: This tab plots incoming floating-point numbers using matplotlib and customtkinter. It features controls to start and stop plotting, clear the plot, and adjust the x-axis range.
 - **Terminal**: This tab provides a native UART terminal GUI based on customtkinter, allowing users to send and receive data. It includes features like text/hex view mode, terminal mode, and auto-scroll.
+- **Plotter**: This tab plots incoming floating-point numbers using matplotlib and customtkinter. It features controls to start and stop plotting, clear the plot, and adjust the x-axis range.
 
 ### Data Format
 
@@ -45,17 +45,13 @@ Here is an example of the data format expected by the `UARTPlotterTab`:
 We register the `UARTService` with the corresponding tab GUI `UARTServiceTab` in the `SERVICE_REGISTER` dictionary as follows:
 
 ```python
-# In src/__init__.py
-from src.services.uart_service import UARTService, UARTServiceTab
+# In src/service_register.py
+# ...
 
 SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
     UARTService: UARTServiceTab,
 }
 ```
-
-## Authors
-
-- [muhamm-ad · GitHub](https://github.com/muhamm-ad)
 
 ### Testing
 
@@ -67,7 +63,7 @@ from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
 
 # Note: use the same service implemented in GUI (AbstractService and UARTService)
-from src.services import UARTService
+from utils import UARTService
 
 import board
 import time
@@ -106,3 +102,7 @@ while True:
 
     time.sleep(0.5)
 ```
+
+## Authors
+
+- [muhamm-ad · GitHub](https://github.com/muhamm-ad)

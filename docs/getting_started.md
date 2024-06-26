@@ -23,7 +23,27 @@ Before you begin, ensure you have the following installed on your system:
    cd PyBLEToolkit
    ```
 
-3. **Install Dependencies**
+3. **Create a Virtual Environment**
+   Create a virtual environment to manage dependencies:
+   ```bash
+   python -m venv venv
+   ```
+
+4. **Activate the Virtual Environment**
+   - On Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+   - On Windows (Command Prompt):
+     ```sh
+     venv\Scripts\activate
+     ```
+   - On Windows (PowerShell):
+     ```sh
+     .\venv\Scripts\Activate.ps1
+     ```
+
+5. **Install Dependencies**
    Install the required Python libraries:
    ```bash
    pip install -r requirements.txt
@@ -37,70 +57,50 @@ Before you begin, ensure you have the following installed on your system:
 2. **Explore the Source Code**
    Take a moment to explore the structure of the project. Familiarize yourself with the content in the `src` and `examples` directories.
 
-[//]: # (## Running an Example)
+## Running the Code
 
-[//]: # ()
-[//]: # (To see PyBLEToolkit in action, run one of the example scripts provided in the `examples` directory:)
+### On Linux
 
-[//]: # ()
-[//]: # (```bash)
+1. **Navigate to the Project Directory**
+   Ensure you are in the root directory of the project:
+   ```bash
+   cd /path/to/PyBLEToolkit
+   ```
 
-[//]: # (python examples/example_service.py)
+2. **Activate the Virtual Environment**
+   ```bash
+   source venv/bin/activate
+   ```
 
-[//]: # (```)
+3. **Run the Main Script**
+   Use the following command to run the main script:
+   ```bash
+   python3 -m src.main
+   ```
 
-[//]: # ()
-[//]: # (## Creating Your First BLE Service GUI)
+### On Windows
 
-[//]: # ()
-[//]: # (1. **Create a New Python Script**)
+1. **Navigate to the Project Directory**
+   Ensure you are in the root directory of the project. You can navigate using the Command Prompt or PowerShell:
+   ```sh
+   cd \path\to\PyBLEToolkit
+   ```
 
-[//]: # (   Create a new Python file in your project, for example, `my_ble_service.py`.)
+2. **Activate the Virtual Environment**
+   - Command Prompt:
+     ```sh
+     venv\Scripts\activate
+     ```
+   - PowerShell:
+     ```sh
+     .\venv\Scripts\Activate.ps1
+     ```
 
-[//]: # ()
-[//]: # (2. **Import the Toolkit**)
-
-[//]: # (   Import the necessary classes and functions from PyBLEToolkit:)
-
-[//]: # (   ```python)
-
-[//]: # (   from src.ble_service import BLEService)
-
-[//]: # (   ```)
-
-[//]: # ()
-[//]: # (3. **Define Your BLE Service Class**)
-
-[//]: # (   Define a class that extends `BLEService`. Implement the necessary methods to handle your specific BLE service requirements:)
-
-[//]: # (   ```python)
-
-[//]: # (   class MyBLEService&#40;BLEService&#41;:)
-
-[//]: # (       def display_data&#40;self, data&#41;:)
-
-[//]: # (           print&#40;"Received data:", data&#41;)
-
-[//]: # (   ```)
-
-[//]: # ()
-[//]: # (4. **Instantiate and Use Your Service**)
-
-[//]: # (   Create an instance of your service and call its methods:)
-
-[//]: # (   ```python)
-
-[//]: # (    # TODO)
-
-[//]: # (   ```)
-
-[//]: # ()
-[//]: # (## Next Steps)
-
-[//]: # ()
-[//]: # (- Explore the documentation to learn more about advanced features and customization.)
-
-[//]: # (- Visit the `docs` folder for detailed guides on using PyBLEToolkit.)
+3. **Run the Main Script**
+   Use the following command to run the main script:
+   ```sh
+   python -m src.main
+   ```
 
 ## Getting Help
 
