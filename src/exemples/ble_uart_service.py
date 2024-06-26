@@ -1,9 +1,9 @@
 from src.abstract_service import AbstractService
+from src.abstract_service_tab import AbstractServiceTab
 from src.utils import STD_PADDING
 from adafruit_ble.services.nordic import UARTService as NordicUARTService
-from src.abstract_service_tab import AbstractServiceTab
 from matplotlib.figure import Figure
-from src.exemples.CustomFigureCanvasTkAgg import CustomFigureCanvasTkAgg
+from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
 import customtkinter as ctk
 import re
 

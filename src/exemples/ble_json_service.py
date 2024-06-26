@@ -5,7 +5,7 @@ from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from src.exemples.CustomFigureCanvasTkAgg import CustomFigureCanvasTkAgg
+from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
 from io import BytesIO
 from cairosvg import svg2png
 from PIL import Image

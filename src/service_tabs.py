@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
-from src import SERVICE_REGISTER
+from src.service_register import SERVICE_REGISTER
 from src.utils import TRANSPARENT_COLOR, STD_PADDING
 from src.service_tabs_manager import ServiceTabsManager
 from src.abstract_service import AbstractService
