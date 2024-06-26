@@ -1,6 +1,7 @@
 import threading
 from threading import Thread
 from typing import Dict, Tuple
+from CTkMessagebox import CTkMessagebox
 from src.utils import STD_PADDING
 from src import SERVICE_REGISTER
 from abstract_service import AbstractService
@@ -45,6 +46,11 @@ class ServiceTabsManager:
                         time.sleep(1)  # TODO: add to doc
                     except Exception as e:
                         print(f"ServiceTabsManager: Error during updating data: {e}")
+                        msg = CTkMessagebox(master=self._master, title="Error", icon="cancel",
+                                            message="During updating data", option_2="Retry", option_1="Cancel",
+                                            topmost=False, sound=True, justify="center")
+                        if msg.get() == "Cancel":
+                            break
 
             running_flag = lambda: self._running
 
