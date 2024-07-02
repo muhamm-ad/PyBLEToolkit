@@ -43,7 +43,7 @@ If you have suggestions for improvements or new features, feel free to submit a 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](docs/LICENSE) file for details.
+This project is licensed under the MIT License—see the [LICENSE](docs/LICENSE) file for details.
 
 ## Authors
 

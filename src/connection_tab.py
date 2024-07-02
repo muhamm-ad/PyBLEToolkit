@@ -4,7 +4,6 @@ from src.utils import TRANSPARENT_COLOR, STD_PADDING
 from adafruit_ble.advertising.standard import Advertisement
 from adafruit_ble import BLERadio, BLEConnection
 from collections import defaultdict
-from bleak.exc import BleakDBusError
 import threading
 import time
 
@@ -169,6 +168,8 @@ class ConnectionTab(ctk.CTkFrame):
     def __init__(self, master, service_connect_command, service_disconnect_command, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure((0,2,3,4), weight=0)
+        self.grid_rowconfigure(1, weight=4)
         self._srv_connect_cmd = service_connect_command
         self._srv_disconnect_cmd = service_disconnect_command
 
@@ -276,7 +277,7 @@ class ConnectionTab(ctk.CTkFrame):
 
         try:
             self._current_connection = BLE.connect(self._selected_advert, timeout=3)
-        except BleakDBusError as e:
+        except Exception as e:
             if "org.bluez.Error.InProgress" in str(e):
                 time.sleep(0.5)  # Wait before retrying
                 try:
@@ -285,8 +286,6 @@ class ConnectionTab(ctk.CTkFrame):
                     return handle_error(e)
             else:
                 return handle_error(e)
-        except Exception as e:
-            return handle_error(e)
 
         return self._current_connection and self._current_connection.connected
 

@@ -1,20 +1,21 @@
 from src.abstract_service import AbstractService
 from src.abstract_service_tab import AbstractServiceTab
+from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
+
 from adafruit_ble.uuid import VendorUUID
 from adafruit_ble.characteristics import Characteristic
 from adafruit_ble.characteristics.json import JSONCharacteristic
-from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
-from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
 from io import BytesIO
-from cairosvg import svg2png
-from PIL import Image
-import numpy as np
-import pygal
-from pygal.style import Style
 import json
 import re
 
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+import numpy as np
+import pygal
+from pygal.style import Style
+from PIL import Image
+from cairosvg import svg2png
 
 MAX_DATA_POINTS = 30
 SOUND_MAX = 100

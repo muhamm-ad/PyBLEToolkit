@@ -29,7 +29,7 @@ It is composed of two tab views:
 
 ### Data Format
 
-The data transmitted and received is in plain text format. Ensure the data sent conforms to the expected format for proper parsing and visualization.
+The data transmitted and received is in plain text format. Ensure the data sent conforming to the expected format for proper parsing and visualization.
 
 Here is an example of the data format expected by the `UARTPlotterTab`:
 
@@ -41,6 +41,14 @@ Here is an example of the data format expected by the `UARTPlotterTab`:
 ```
 
 ## Usage
+
+## Usage
+
+Before you begin, ensure you have the following python packages installed:
+
+```
+matplotlib
+```
 
 We register the `UARTService` with the corresponding tab GUI `UARTServiceTab` in the `SERVICE_REGISTER` dictionary as follows:
 

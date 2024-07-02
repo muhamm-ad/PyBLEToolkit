@@ -14,11 +14,11 @@ The [ExJSONService](../../src/exemples/ble_json_service.py) example includes:
 
 ## Service Implementation
 
-The `ExJSONService` class inherits from [AbstractService](src/abstract_service.py) and defines the BLE characteristics for the sensor data.
+The `ExJSONService` class inherits from [AbstractService](../../src/abstract_service.py) and defines the BLE characteristics for the sensor data.
 
 ## GUI Implementation
 
-The `ExJSONServiceTab` class inherits from [AbstractServiceTab](src/abstract_service_tab.py) and provides a visual representation of the sensor data using matplotlib and pygal.
+The `ExJSONServiceTab` class inherits from [AbstractServiceTab](../../src/abstract_service_tab.py) and provides a visual representation of the sensor data using matplotlib and pygal.
 
 ## Protocol
 
@@ -72,6 +72,16 @@ The `ExJSONService` class provides sensor data in JSON format, structured as fol
 - **Humidity**: Humidity percentage.
 
 ## Usage
+
+Before you begin, ensure you have the following python packages installed:
+
+```
+matplotlib
+numpy
+pygal
+pillow
+cairosvg
+```
 
 To use the `ExJSONService` and `ExJSONServiceTab`, register them in the `SERVICE_REGISTER` dictionary as follows:
 
