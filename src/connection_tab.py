@@ -259,6 +259,7 @@ class ConnectionTab(ctk.CTkFrame):
                 self._message_label.update_message(message="Connected", color="green")
                 self._srv_connect_cmd(self._selected_advert, self._current_connection)
                 self._disconnect_button.configure(state=ctk.NORMAL)
+                self._scan_button.configure(state=ctk.DISABLED)
             else:
                 # self._message_label.update_message(message="Not Connected", color="red", timeout=MESSAGE_TIMEOUT)
                 self._disconnect_button.configure(state=ctk.DISABLED)

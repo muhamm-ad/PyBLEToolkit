@@ -42,8 +42,6 @@ Here is an example of the data format expected by the `UARTPlotterTab`:
 
 ## Usage
 
-## Usage
-
 Before you begin, ensure you have the following python packages installed:
 
 ```
