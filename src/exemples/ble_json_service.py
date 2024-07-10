@@ -1,39 +1,22 @@
+import json
+from io import BytesIO
+
+import numpy as np
+import plotly.graph_objects as go
+from PIL import Image
+from adafruit_ble.characteristics import Characteristic
+from adafruit_ble.characteristics.json import JSONCharacteristic
+from adafruit_ble.uuid import VendorUUID
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+
 from src.abstract_service import AbstractService
 from src.abstract_service_tab import AbstractServiceTab
 from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
 
-from adafruit_ble.uuid import VendorUUID
-from adafruit_ble.characteristics import Characteristic
-from adafruit_ble.characteristics.json import JSONCharacteristic
-from io import BytesIO
-import json
-import re
-
-from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
-import numpy as np
-import pygal
-from pygal.style import Style
-from PIL import Image
-from cairosvg import svg2png
-
 MAX_DATA_POINTS = 30
 SOUND_MAX = 100
 HUMIDITY_MAX = 100
-
-CUSTOM_STYLE = Style(
-    background='transparent',
-    plot_background='transparent',
-    font_family='googlefont:Raleway',
-    title_font_size=24,
-    label_font_size=16,
-    major_label_font_size=18,
-    value_label_font_size=18,
-    tooltip_font_size=18,
-    legend_font_size=18,
-    transition='400ms ease-in',
-    colors=('#F46A6A', '#34A853', '#FBBC04', '#4285F4', '#0F9D58')
-)
 
 
 class ExJSONServiceTab(AbstractServiceTab):
@@ -164,34 +147,75 @@ class ExJSONServiceTab(AbstractServiceTab):
             ax.legend()
 
     def _redraw_gauges(self):
-        gauge = pygal.SolidGauge(inner_radius=0.70, half_pie=True, show_legend=True, style=CUSTOM_STYLE)
+        my_layout = go.Layout(margin=dict(l=0, r=0, t=0, b=0, pad=0))
 
-        gauge.add(title='Sound',
-                  values=[{'label': 'Sound', 'value': self._sound_data, 'max_value': 100, 'color': 'pink'}],
-                  formatter=lambda x: f'{x} dB')
+        sound_gauge = go.Figure(
+            data=go.Indicator(
+                mode="gauge+number",
+                value=self._sound_data,
+                domain={'x': [0.4, 0.9]},
+                title={'text': "Sound Level", 'font': {'size': 24}},
+                gauge={
+                    'axis': {'range': [None, 100]},
+                    'bar': {'color': '#F46A6A'},
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 80
+                    }
+                },
+                number={'suffix': " dB", 'font': {'size': 24}}
+            ),
+            layout=my_layout
+        )
 
-        gauge.add(title='Humidity',
-                  values=[{'label': 'Humidity', 'value': self._humidity_data, 'max_value': 100, 'color': 'green'}],
-                  formatter=lambda x: '{:.10g}%'.format(x))
+        humidity_gauge = go.Figure(
+            data=go.Indicator(
+                mode="gauge+number",
+                value=self._humidity_data,
+                domain={'x': [0.1, 0.6]},
+                title={'text': "Humidity", 'font': {'size': 24}},
+                gauge={
+                    'axis': {'range': [None, 100]},
+                    'bar': {'color': '#34A853'},
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                },
+                number={'suffix': " %", 'font': {'size': 24}}
+            ),
+            layout=my_layout
+        )
 
-        svg_data = gauge.render()
-        modified_svg = re.sub('font-size:\d+px', 'font-size:20px', svg_data.decode('utf-8'))
+        # Render Plotly figures to image
+        sound_gauge_image = sound_gauge.to_image(format="png")
+        humidity_gauge_image = humidity_gauge.to_image(format="png")
 
-        # Convert modified SVG to PNG
-        png_image = svg2png(bytestring=modified_svg)
-        image = Image.open(BytesIO(png_image))
-        self._gauges_ax.imshow(np.array(image), aspect='auto')
-        self._gauges_ax.axis('off')  # Hide axis
+        # Open images with PIL
+        sound_image = Image.open(BytesIO(sound_gauge_image))
+        humidity_image = Image.open(BytesIO(humidity_gauge_image))
+
+        # Convert to numpy arrays and display with Matplotlib
+        sound_np_image = np.array(sound_image)
+        humidity_np_image = np.array(humidity_image)
+
+        # Display images in the Matplotlib subplot
+        combined_image = np.hstack((sound_np_image, humidity_np_image))
+        self._gauges_ax.imshow(combined_image, aspect='auto')
+        self._gauges_ax.axis('off')
 
     def _redraw_colors(self):
         self._color_ax.cla()
-        self._color_ax.axis('off')
 
         max_intensity = max(self._color_data.values()) if max(self._color_data.values()) > 0 else 1
         normalized_color_data = {k: v / max_intensity for k, v in self._color_data.items()}
 
-        positions = [(1, 1), (3, 1), (1, 3), (3, 3)]
-        size = 2000
+        # Calculate positions to center circles horizontally and vertically
+        num_colors = len(normalized_color_data)
+        x_positions = np.linspace(1, num_colors * 2 - 1, num_colors)
+        y_position = 1  # Single row, centered vertically
 
         def get_rgb_color(color_name):
             return {
@@ -201,15 +225,16 @@ class ExJSONServiceTab(AbstractServiceTab):
                 'Clear': (0.9, 0.9, 0.9)
             }.get(color_name, (0, 0, 0))
 
-        for pos, (color, intensity) in zip(positions, normalized_color_data.items()):
+        for x_pos, (color, intensity) in zip(x_positions, normalized_color_data.items()):
             rgb_color = get_rgb_color(color)
-            circle = plt.Circle(pos, 0.5, color=rgb_color, alpha=intensity)
+            circle = plt.Circle((x_pos, y_position), 0.5, color=rgb_color, alpha=intensity)
             self._color_ax.add_patch(circle)
-            self._color_ax.text(pos[0], pos[1], f'{color}\n{intensity:.2f}', horizontalalignment='center',
+            self._color_ax.text(x_pos, y_position, f'{color}\n{intensity:.2f}', horizontalalignment='center',
                                 verticalalignment='center')
 
-        self._color_ax.set_xlim(0, 4)
-        self._color_ax.set_ylim(0, 4)
+        # Set limits to center the row of circles
+        self._color_ax.set_xlim(0, num_colors * 2)
+        self._color_ax.set_ylim(0, 2)
         self._color_ax.set_aspect('equal')
         self._color_ax.axis('off')
 

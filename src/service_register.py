@@ -3,11 +3,10 @@ from src.abstract_service import AbstractService
 from src.abstract_service_tab import AbstractServiceTab
 
 from src.exemples.ble_uart_service import UARTService, UARTServiceTab
-# from src.exemples.ble_json_service import ExJSONService, ExJSONServiceTab
+from src.exemples.ble_json_service import ExJSONService, ExJSONServiceTab
 
 # Service register mapping services to their corresponding tab classes
 SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
+    ExJSONService: ExJSONServiceTab,
     UARTService: UARTServiceTab,
-    # ExJSONService: ExJSONServiceTab,
-
 }
