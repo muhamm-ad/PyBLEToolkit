@@ -1,6 +1,9 @@
 # ExJSONService Example
 
-This document provides an example implementation of a JSON-based BLE service and its corresponding GUI integration using the PyBLEToolkit. The ExJSONService demonstrates how to handle various sensor data and visualize it in a user-friendly interface.
+This document provides an example implementation of a JSON-based BLE service and its corresponding GUI integration using
+the PyBLEToolkit.
+The ExJSONService demonstrates how to handle various sensor data and visualize it in a user-friendly
+interface.
 
 ## Overview
 
@@ -9,16 +12,19 @@ An example of what the graphical visualization looks like:
 ![ExJSONService Visualization](json_service_exemple.png)
 
 The [ExJSONService](../../src/exemples/ble_json_service.py) example includes:
+
 - A BLE service (`ExJSONService`) that provides sensor data in JSON format.
 - A GUI tab (`ExJSONServiceTab`) to visualize the sensor data using matplotlib and pygal.
 
 ## Service Implementation
 
-The `ExJSONService` class inherits from [AbstractService](../../src/abstract_service.py) and defines the BLE characteristics for the sensor data.
+The `ExJSONService` class inherits from [AbstractService](../../src/abstract_service.py) and defines the BLE
+characteristics for the sensor data.
 
 ## GUI Implementation
 
-The `ExJSONServiceTab` class inherits from [AbstractServiceTab](../../src/abstract_service_tab.py) and provides a visual representation of the sensor data using matplotlib and pygal.
+The `ExJSONServiceTab` class inherits from [AbstractServiceTab](../../src/abstract_service_tab.py) and provides a visual
+representation of the sensor data using matplotlib and pygal.
 
 ## Protocol
 
@@ -78,9 +84,9 @@ Before you begin, ensure you have the following python packages installed:
 ```
 matplotlib
 numpy
-pygal
 pillow
-cairosvg
+plotly
+kaleido
 ```
 
 To use the `ExJSONService` and `ExJSONServiceTab`, register them in the `SERVICE_REGISTER` dictionary as follows:
@@ -99,7 +105,8 @@ Once registered, you can run the application and connect to the ExJSONService to
 
 ### Testing
 
-This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending JSON data with the following code:
+This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending JSON data with the
+following code:
 
 ```python
 from adafruit_sht31d import SHT31D
@@ -131,9 +138,11 @@ i2c = board.I2C()  # uses board.SCL and board.SDA
 # check for LSM6DS33 or LSM6DS3TR-C
 try:
     from adafruit_lsm6ds.lsm6ds33 import LSM6DS33 as LSM6DS
+
     lsm6ds = LSM6DS(i2c)
 except RuntimeError:
     from adafruit_lsm6ds.lsm6ds3 import LSM6DS3 as LSM6DS
+
     lsm6ds = LSM6DS(i2c)
 
 apds9960 = APDS9960(i2c)

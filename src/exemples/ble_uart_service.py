@@ -1,11 +1,13 @@
-from src.abstract_service import AbstractService
-from src.abstract_service_tab import AbstractServiceTab
-from src.utils import STD_PADDING
+import re
+
+import customtkinter as ctk
 from adafruit_ble.services.nordic import UARTService as NordicUARTService
 from matplotlib.figure import Figure
+
+from src.abstract_service import AbstractService
+from src.abstract_service_tab import AbstractServiceTab
 from src.exemples.custom_figure_canvas_tkagg import CustomFigureCanvasTkAgg
-import customtkinter as ctk
-import re
+from src.utils import STD_PADDING
 
 MAX_DATA_POINTS = 1000  # TODO: add to doc
 TRANSPARENT_COLOR = "transparent"

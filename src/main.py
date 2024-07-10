@@ -1,4 +1,5 @@
 import customtkinter as ctk
+
 from src.connection_tab import ConnectionTab
 from src.service_tabs import ServiceTabs
 from src.utils import STD_PADDING, DEFAULT_APPEARANCE_MODE, DEFAULT_COLOR_THEME

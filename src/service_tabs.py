@@ -1,12 +1,14 @@
+from typing import Dict
+
 import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
-from src.service_register import SERVICE_REGISTER
-from src.utils import TRANSPARENT_COLOR, STD_PADDING
-from src.service_tabs_manager import ServiceTabsManager
-from src.abstract_service import AbstractService
 from adafruit_ble import BLEConnection, Advertisement
-from typing import Dict
+
+from src.abstract_service import AbstractService
+from src.service_register import SERVICE_REGISTER
+from src.service_tabs_manager import ServiceTabsManager
+from src.utils import TRANSPARENT_COLOR, STD_PADDING
 
 
 class ServicesBox(ctk.CTkFrame):

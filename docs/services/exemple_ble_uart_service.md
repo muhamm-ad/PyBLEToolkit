@@ -1,6 +1,7 @@
 # UARTService Example
 
-This document provides an example implementation of a UART-based BLE service and its corresponding GUI integration using the PyBLEToolkit. The UARTService demonstrates how to handle UART data and visualize it in a user-friendly interface.
+This document provides an example implementation of a UART-based BLE service and its corresponding GUI integration using
+the PyBLEToolkit. The UARTService demonstrates how to handle UART data and visualize it in a user-friendly interface.
 
 ## Overview
 
@@ -12,24 +13,31 @@ Below is an example of what the graphical visualization looks like:
 </div>
 
 The [UARTService](../../src/exemples/ble_uart_service.py) example includes:
+
 - A BLE service (`UARTService`) that communicates via UART.
 - A GUI tab (`UARTServiceTab`) to visualize the UART data using matplotlib and a terminal interface.
 
 ## Service Implementation
 
-The `UARTService` class inherits from `NordicUARTService` and [AbstractService](src/abstract_service.py) to define the BLE characteristics for UART communication.
+The `UARTService` class inherits from `NordicUARTService` and [AbstractService](../../src/abstract_service.py) to define the
+BLE characteristics for UART communication.
 
 ## GUI Implementation
 
-The `UARTServiceTab` class inherits from [AbstractServiceTab](src/abstract_service_tab.py) and provides a visual representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface.
+The `UARTServiceTab` class inherits from [AbstractServiceTab](../../src/abstract_service_tab.py) and provides a visual
+representation of the UART data using matplotlib for plotting and a customtkinter-based terminal interface.
 
 It is composed of two tab views:
-- **Terminal**: This tab provides a native UART terminal GUI based on customtkinter, allowing users to send and receive data. It includes features like text/hex view mode, terminal mode, and auto-scroll.
-- **Plotter**: This tab plots incoming floating-point numbers using matplotlib and customtkinter. It features controls to start and stop plotting, clear the plot, and adjust the x-axis range.
+
+- **Terminal**: This tab provides a native UART terminal GUI based on customtkinter, allowing users to send and receive
+  data. It includes features like text/hex view mode, terminal mode, and auto-scroll.
+- **Plotter**: This tab plots incoming floating-point numbers using matplotlib and customtkinter. It features controls
+  to start and stop plotting, clear the plot, and adjust the x-axis range.
 
 ### Data Format
 
-The data transmitted and received is in plain text format. Ensure the data sent conforming to the expected format for proper parsing and visualization.
+The data transmitted and received is in plain text format. Ensure the data sent conforming to the expected format for
+proper parsing and visualization.
 
 Here is an example of the data format expected by the `UARTPlotterTab`:
 
@@ -48,7 +56,8 @@ Before you begin, ensure you have the following python packages installed:
 matplotlib
 ```
 
-We register the `UARTService` with the corresponding tab GUI `UARTServiceTab` in the `SERVICE_REGISTER` dictionary as follows:
+We register the `UARTService` with the corresponding tab GUI `UARTServiceTab` in the `SERVICE_REGISTER` dictionary as
+follows:
 
 ```python
 # In src/service_register.py
@@ -61,7 +70,8 @@ SERVICE_REGISTER: Dict[Type[AbstractService], Type[AbstractServiceTab]] = {
 
 ### Testing
 
-This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending temperature data with the following code:
+This example has been tested with the Adafruit Feather nRF52840 Sense (Product ID: 4516) sending temperature data with
+the following code:
 
 ```python
 from adafruit_bmp280 import Adafruit_BMP280_I2C

@@ -1,10 +1,12 @@
 # Getting Started with PyBLEToolkit
 
-Welcome to PyBLEToolkit! This guide will walk you through setting up and starting to use the PyBLEToolkit to create and manage Bluetooth Low Energy (BLE) service GUIs with Python and tkinter.
+Welcome to PyBLEToolkit! This guide will walk you through setting up and starting to use the PyBLEToolkit to create and
+manage Bluetooth Low Energy (BLE) service GUIs with Python and tkinter.
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
+
 - Python 3.6 or newer
 - pip (Python package installer)
 - Git (for version control)
@@ -30,18 +32,18 @@ Before you begin, ensure you have the following installed on your system:
    ```
 
 4. **Activate the Virtual Environment**
-   - On Linux:
-     ```bash
-     source venv/bin/activate
-     ```
-   - On Windows (Command Prompt):
-     ```sh
-     venv\Scripts\activate
-     ```
-   - On Windows (PowerShell):
-     ```sh
-     .\venv\Scripts\Activate.ps1
-     ```
+    - On Linux:
+      ```bash
+      source venv/bin/activate
+      ```
+    - On Windows (Command Prompt):
+      ```sh
+      venv\Scripts\activate
+      ```
+    - On Windows (PowerShell):
+      ```sh
+      .\venv\Scripts\Activate.ps1
+      ```
 
 5. **Install Dependencies**
    Install the required Python libraries:
@@ -52,10 +54,12 @@ Before you begin, ensure you have the following installed on your system:
 ## Setting Up Your Development Environment
 
 1. **Open Your IDE**
-   Open your preferred Integrated Development Environment (IDE) or code editor. We recommend using Visual Studio Code or PyCharm for Python development.
+   Open your preferred Integrated Development Environment (IDE) or code editor. We recommend using Visual Studio Code or
+   PyCharm for Python development.
 
 2. **Explore the Source Code**
-   Take a moment to explore the structure of the project. Familiarize yourself with the content in the `src` and `examples` directories.
+   Take a moment to explore the structure of the project. Familiarize yourself with the content in the `src`
+   and `examples` directories.
 
 ## Running the Code
 
@@ -87,14 +91,14 @@ Before you begin, ensure you have the following installed on your system:
    ```
 
 2. **Activate the Virtual Environment**
-   - Command Prompt:
-     ```sh
-     venv\Scripts\activate
-     ```
-   - PowerShell:
-     ```sh
-     .\venv\Scripts\Activate.ps1
-     ```
+    - Command Prompt:
+      ```sh
+      venv\Scripts\activate
+      ```
+    - PowerShell:
+      ```sh
+      .\venv\Scripts\Activate.ps1
+      ```
 
 3. **Run the Main Script**
    Use the following command to run the main script:
@@ -104,4 +108,5 @@ Before you begin, ensure you have the following installed on your system:
 
 ## Getting Help
 
-If you encounter any issues or have questions, please check out our [issues page](https://github.com/muhamm-ad/PyBLEToolkit/issues) on GitHub.
+If you encounter any issues or have questions, please check out
+our [issues page](https://github.com/muhamm-ad/PyBLEToolkit/issues) on GitHub.

@@ -1,12 +1,14 @@
 import threading
+import time
 from threading import Thread
 from typing import Dict, Tuple
+
 from CTkMessagebox import CTkMessagebox
-from src.utils import STD_PADDING
-from src.service_register import SERVICE_REGISTER
+
 from src.abstract_service import AbstractService
 from src.abstract_service_tab import AbstractServiceTab
-import time
+from src.service_register import SERVICE_REGISTER
+from src.utils import STD_PADDING
 
 
 class ServiceTabsManager:

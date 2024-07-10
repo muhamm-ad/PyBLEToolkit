@@ -1,11 +1,13 @@
-import customtkinter as ctk
-from CTkListbox import CTkListbox
-from src.utils import TRANSPARENT_COLOR, STD_PADDING
-from adafruit_ble.advertising.standard import Advertisement
-from adafruit_ble import BLERadio, BLEConnection
-from collections import defaultdict
 import threading
 import time
+from collections import defaultdict
+
+import customtkinter as ctk
+from CTkListbox import CTkListbox
+from adafruit_ble import BLERadio, BLEConnection
+from adafruit_ble.advertising.standard import Advertisement
+
+from src.utils import TRANSPARENT_COLOR, STD_PADDING
 
 BLE = BLERadio()
 STOP_SCAN_SLEEP_TIME = 1.5
@@ -168,7 +170,7 @@ class ConnectionTab(ctk.CTkFrame):
     def __init__(self, master, service_connect_command, service_disconnect_command, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure((0,2,3,4), weight=0)
+        self.grid_rowconfigure((0, 2, 3, 4), weight=0)
         self.grid_rowconfigure(1, weight=4)
         self._srv_connect_cmd = service_connect_command
         self._srv_disconnect_cmd = service_disconnect_command
