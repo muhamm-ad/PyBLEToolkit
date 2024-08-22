@@ -4,7 +4,10 @@ PyBLEToolkit is a Python toolkit designed to provide a streamlined environment f
 using customtkinter. This toolkit simplifies the development of custom BLE service interfaces, enabling developers to
 focus on functionality and data handling while easily integrating with a GUI framework.
 
-<img src="animated-images.svg" title="" alt="Animated Images" data-align="center">
+[//]: <> (<img src="animated-images.svg" title="" alt="Animated Images" data-align="center">)
+<p align="center">
+  <img src="docs/services/json_service_exemple.png" title="" alt="exemple" width="65%">
+</p>
 
 ## Features
 
